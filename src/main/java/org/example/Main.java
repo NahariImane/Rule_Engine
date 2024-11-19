@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.model.DataObject;
 import org.example.model.Workflow;
 import org.example.service.RuleEngine;
 import org.example.service.RuleValidator;
@@ -8,54 +9,75 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Main {
-    public static void main(String[] args) {
+import static org.example.ValidationFunctions.Minor_Check;
 
-        try {
+public class Main {
+    public static void main(String[] args) throws IOException {
+
+       /* try {
             // Charger les workflows depuis le fichier Excel
             RuleEngine ruleEngine = new RuleEngine("src/main/Configuration/RulesTest.xlsx");
             RuleValidator ruleValidator = new RuleValidator();
 
-            // Données de test pour chaque workflow
-            Map<String, Object> requestData1 = new HashMap<>();
-            requestData1.put("CHAMP_DEMANDE_TYPE", "demande");
-            requestData1.put("CHAMP_Type_TITRE", "CNIE");
-            requestData1.put("CHAMP_DATE_NAISSANCE", "2010-01-01"); // moins de 18 ans
 
-            Map<String, Object> requestData2 = new HashMap<>();
-            requestData2.put("CHAMP_DEMANDE_TYPE", "demande");
-            requestData2.put("CHAMP_Type_TITRE", "PSP");
-            requestData2.put("CHAMP_DATE_NAISSANCE", "1990-01-01"); // 18 ans ou plus
-            requestData2.put("CHAMP_ADRESSE", "123 Main St");
+            // Création des objets DataObject pour chaque test
+            DataObject dataObject1 = new DataObject();
+            dataObject1.setField("CHAMP_DEMANDE_TYPE", "demande");
+            dataObject1.setField("CHAMP_Type_TITRE", "CNIE");
+            dataObject1.setField("CHAMP_DATE_NAISSANCE", "2000-01-01");
 
-            Map<String, Object> requestData3 = new HashMap<>();
-            requestData3.put("CHAMP_DEMANDE_TYPE", "demande");
-            requestData3.put("CHAMP_Type_TITRE", "PSP");
-            requestData3.put("CHAMP_DATE_NAISSANCE", "2010-01-01"); // moins de 18 ans
+            DataObject dataObject2 = new DataObject();
+            dataObject2.setField("CHAMP_DEMANDE_TYPE", "demande");
+            dataObject2.setField("CHAMP_Type_TITRE", "PSP");
+            dataObject2.setField("CHAMP_DATE_NAISSANCE", "1990-01-01"); // Adulte
+            dataObject2.setField("CHAMP_ADRESSE", "123 Main St");
 
-            // Validation pour DemandeCNIe mineur
-            System.out.println("\n--- Validation du workflow : DemandeCNIe mineur ---");
-            Workflow workflow1 = ruleEngine.getWorkflow("DemandeCNIe mineur");
-            boolean isValid1 = ruleValidator.validateWorkflow(workflow1, requestData1);
-            System.out.println("Le workflow DemandeCNIe mineur est " + (isValid1 ? "valide." : "invalide."));
+            DataObject dataObject3 = new DataObject();
+            dataObject3.setField("CHAMP_DEMANDE_TYPE", "demande");
+            dataObject3.setField("CHAMP_Type_TITRE", "PSP");
+            dataObject3.setField("CHAMP_DATE_NAISSANCE", "2010-01-01"); // Mineur
+            dataObject3.setField("CHAMP_PRENOM", "Imane");
 
-            // Validation pour Demande passeport adulte
-            System.out.println("\n--- Validation du workflow : Demande passeport adulte ---");
-            Workflow workflow2 = ruleEngine.getWorkflow("Demande passeport adulte");
-            boolean isValid2 = ruleValidator.validateWorkflow(workflow2, requestData2);
-            System.out.println("Le workflow Demande passeport adulte est " + (isValid2 ? "valide." : "invalide."));
 
-            // Validation pour Demande passeport mineur
-            System.out.println("\n--- Validation du workflow : Demande passeport mineur ---");
-            Workflow workflow3 = ruleEngine.getWorkflow("Demande passeport mineur");
-            boolean isValid3 = ruleValidator.validateWorkflow(workflow3, requestData3);
-            System.out.println("Le workflow Demande passeport mineur est " + (isValid3 ? "valide." : "invalide."));
+
+           validateDataObject(dataObject1,ruleEngine, ruleValidator);
 
         } catch (IOException e) {
             e.printStackTrace();
+        }*/
+        RuleEngine ruleEngine = new RuleEngine("src/main/Configuration/RulesTest.xlsx");
+
+        DataObject object = new DataObject();
+        //object.setField("DEMANDE_TYPE","DEMANDE");
+        object.setField("CHAMP_DATE_NAISSANCE","2010-01-01");
+        object.setField("CHAMP_PRENOM","Imane");
+        object.setField("CHAMP_TYPE_TITRE","PSP");
+        object.setField("CHAMP_ADRESSE","test adresse");
+
+        Workflow workflow = ruleEngine.identifyWorkflow(object);
+        if(workflow ==null)
+
+        {
+            System.out.println("Aucun workflow correspondant trouvé.");
+        } else
+
+        {
+            System.out.println("Workflow identifié : " + workflow.getName());
+           // boolean isValid = ruleEngine.validateWorkflow(object, workflow);
+            boolean isValid = workflow.validateAllFields(object);
+            //System.out.println("Le workflow est-il valide ? " + isValid);
+
+            System.out.println("Validation globale du workflow : " + (isValid ? "Valide" : "Invalide"));
         }
 
 
+
     }
+
+
+
+
+
+
 
 }
