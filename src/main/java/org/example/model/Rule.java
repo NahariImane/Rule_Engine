@@ -1,9 +1,9 @@
 package org.example.model;
 
-import org.mvel2.MVEL;
+import java.util.List;
 
 public class Rule {
-    private String field;
+    /*private String field;
     private String expression;
 
     public Rule(String field, String expression ){
@@ -33,5 +33,21 @@ public class Rule {
     @Override
     public String toString() {
         return "Rule[field=" + field + ", expression=" + expression + "]";
+    }*/
+
+    private String id;                 // Identifiant label de la règle (ex : REGLE_DATE_NAISSANCE)
+    private List<Condition> conditions; // Liste des conditions
+
+    public Rule(String id, List<Condition> conditions) {
+        this.id = id;
+        this.conditions = conditions;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public List<Condition> getConditions() {
+        return conditions;
     }
 }

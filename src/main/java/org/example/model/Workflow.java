@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Workflow {
 
-    private String name;
+    /*private String name; // nom workflow
     private List<Rule> rules;
     private String condition;
 
@@ -50,5 +50,23 @@ public class Workflow {
     @Override
     public String toString() {
         return "Workflow[name=" + name + ", condition=" + condition + ", rules=" + rules + "]";
+    }*/
+
+    private String name;
+
+    // condition globale du workflow
+    private String condition;
+
+    public Workflow(String name, String condition) {
+        this.name = name;
+        this.condition = condition;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCondition() {
+        return condition;
     }
 }

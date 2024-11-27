@@ -2,9 +2,7 @@ package org.example.service;
 
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import org.example.ValidationFunctions;
-import org.example.model.DataObject;
-import org.example.model.Rule;
-import org.example.model.Workflow;
+import org.example.model.*;
 
 
 import org.apache.poi.ss.usermodel.*;
@@ -16,115 +14,139 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RuleEngine {
-    public Map<String , Workflow> workflows;
-    public RuleEngine(String excelFilePath)throws IOException {
-        this.workflows = loadRulesFromExcel(excelFilePath);
-        System.out.println("Workflows chargés :");
-        workflows.forEach((name, workflow) -> {
-            System.out.println("Nom du workflow : " + name);
-            workflow.getRules().forEach(rule ->
-                    System.out.println(" - Champ : " + rule.getField() + ", Expression : " + rule.getExpression()));
-        });
+
+    private RuleManager ruleManager;
+
+    public RuleEngine(RuleManager ruleManager) {
+
+        this.ruleManager = ruleManager;
     }
 
-    private Map<String , Workflow> loadRulesFromExcel (String filePath) throws  IOException{
-        Map<String,Workflow> workflows = new HashMap<>();
-        try(FileInputStream file = new FileInputStream(filePath);
-            Workbook workbook = new XSSFWorkbook (file)){
-            Sheet sheet = workbook.getSheetAt(0);
-            Row headerRow = sheet.getRow(0);
-            for (Row row : sheet){
-                if( row.getRowNum() == 0) continue;
-                    // ----------------Format vertical -----------------------
-                /*String context = row.getCell(0).getStringCellValue().trim();
-                String field = row.getCell(1).getStringCellValue().trim();
-                String expression = row.getCell(4).getStringCellValue().trim();
+    public void start(Map<String, Object> inputData) {
+        // Identifie le workflow applicable en fonction des conditions
+        List<RuleContainer> containers = ruleManager.identifyWorkflows(inputData);
 
-                Rule rule = new Rule(field, expression);
-                workflows.computeIfAbsent(context, k -> new Workflow(context, new ArrayList<>())).getRules().add(rule);
-            */
-                // Lecture des informations générales du workflow
-                String workflowName = row.getCell(0).getStringCellValue().trim();
-                String condition = row.getCell(1).getStringCellValue().trim();
+        if (containers.isEmpty()) {
+            System.out.println("Aucun workflow applicable.");
+            return;
+        }
 
-                Workflow workflow = new Workflow(workflowName,condition, new ArrayList<>());
-                // Parcourir les colonnes par paires à partir de la troisième colonne
-                for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
-                    Cell champCell = row.getCell(col);
-                    Cell expressionCell = row.getCell(col + 1);
-                    // Vérification si le champ est activé ("YES") et que l'expression est présente
-                    if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && expressionCell != null) {
-                        // Nom du champ basé sur l'en-tête
-                        String fieldName = headerRow.getCell(col).getStringCellValue().trim();
-                        String expression = expressionCell.getStringCellValue().trim();
-                        // Création de la règle et ajout au workflow
-                        Rule rule = new Rule(fieldName, expression);
-                        workflow.getRules().add(rule);
-                    }
-                }
-                //Ajout du workflow au map :
-                workflows.put(workflowName, workflow);
+        // Affiche les workflows identifiés
+        System.out.println("Workflows applicables identifiés : ");
+        for (RuleContainer container : containers) {
+            System.out.println("- " + container.getWorkflow().getName());
+            for (Field field : container.getFields()) {
+                validateField(container, field, inputData);
             }
         }
-    return workflows;
+    }
+    private List<Field> collectFieldsFromWorkflows(List<RuleContainer> containers) {
+        // Collecte unique des champs de tous les workflows applicables
+        Set<String> seenFields = new HashSet<>();
+        List<Field> fields = new ArrayList<>();
+
+        for (RuleContainer container : containers) {
+            for (Field field : container.getFields()) {
+                if (seenFields.add(field.getLabel())) {
+                    fields.add(field);
+                }
+            }
+        }
+
+        return fields;
+    }
+    private Map<String, List<Rule>> mergeRulesFromWorkflows(List<RuleContainer> containers) {
+        // Fusionner les règles des workflows applicables
+        Map<String, List<Rule>> mergedRules = new HashMap<>();
+
+        for (RuleContainer container : containers) {
+            for (Rule rule : container.getRules()) {
+                mergedRules
+                        .computeIfAbsent(rule.getId(), k -> new ArrayList<>())
+                        .add(rule);
+            }
+        }
+
+        return mergedRules;
     }
 
-    private boolean evaluateCondition(String condition, Map<String, Object> context) {
-        try {
-            // Ajouter la fonction Minor_Check au contexte
-            context.put("Minor_Check", ValidationFunctions.class.getMethod("Minor_Check", String.class, int.class));
 
-            // Évaluer la condition avec MVEL
+    private void validateField(RuleContainer container, Field field, Map<String, Object> inputData) {
+        Object value = inputData.get(field.getLabel());
+
+        // Vérifie si le champ est obligatoire et si la valeur est présente
+        if (field.isObligatory() && value == null) {
+            System.out.println("Erreur : Le champ obligatoire '" + field.getLabel() + "' est absent.");
+            return;
+        }
+
+        // Trouve la règle pour ce champ
+        Rule rule = container.getRules().stream()
+                .filter(r -> r.getId().equalsIgnoreCase(field.getLabel()))
+                .findFirst()
+                .orElse(null);
+
+        if (rule == null) {
+            System.out.println("Aucune règle pour le champ : " + field.getLabel());
+            return;
+        }
+
+        // Vérifie les conditions de la règle
+        for (Condition condition : rule.getConditions()) {
+            boolean result = evaluateCondition(condition.getExpression(), inputData);
+            System.out.println("Condition : " + condition.getExpression() + " -> " + result);
+            if (!result) {
+                System.out.println("Erreur : Validation échouée pour le champ : " + field.getLabel());
+                return;
+            }
+        }
+
+        // Validation réussie pour ce champ
+        System.out.println("Validation réussie pour le champ : " + field.getLabel());
+    }
+
+    private boolean isTypeCompatible(Object value, String expectedType) {
+        switch (expectedType.toLowerCase()) {
+            case "string":
+                return value instanceof String;
+            case "integer":
+            case "int":
+                return value instanceof Integer;
+            case "double":
+                return value instanceof Double;
+            case "date":
+                return value instanceof java.util.Date;
+            default:
+                return true; // Par défaut, considérer compatible si le type n'est pas défini
+        }
+    }
+
+
+
+    private boolean evaluateCondition(String condition, Map<String, Object> inputData) {
+        // Remplace les variables dans la condition par leurs valeurs
+        for (Map.Entry<String, Object> entry : inputData.entrySet()) {
+            String placeholder = "%" + entry.getKey() + "%";
+            condition = condition.replace(placeholder, "\"" + entry.getValue().toString() + "\"");
+        }
+
+        // Crée le contexte d'exécution pour MVEL
+        Map<String, Object> context = new HashMap<>();
+        context.put("Minor_Check", (BiFunction<String, Integer, Boolean>) ValidationFunctions::Minor_Check);
+
+        try {
+            // Évalue la condition avec MVEL
             return (Boolean) MVEL.eval(condition, context);
         } catch (Exception e) {
-            System.err.println("Erreur d'évaluation de la condition : " + condition);
+            System.err.println("Erreur lors de l'évaluation de la condition : " + condition);
+            e.printStackTrace();
             return false;
         }
     }
-
-    private String substitutePlaceholders(String condition, DataObject object) {
-        // Substitution des placeholders
-        for (String field : object.getFields().keySet()) {
-            String placeholder = "%" + field + "%";
-            String value = object.getField(field) == null ? "null" : "'" + object.getField(field).toString() + "'";
-            condition = condition.replace(placeholder, value);
-        }
-        return condition;
-    }
-
-
-
-    public Workflow identifyWorkflow(DataObject object) {
-        for (Workflow workflow : workflows.values()) {
-            // Substituer les placeholders dans la condition
-            String preparedCondition = substitutePlaceholders(workflow.getCondition(), object);
-
-            // Préparer le contexte pour MVEL
-            Map<String, Object> context = new HashMap<>();
-            try {
-                context.put("Minor_Check", ValidationFunctions.class.getMethod("Minor_Check", String.class, int.class));
-            } catch (Exception e) {
-                System.err.println("Erreur lors de l'ajout de la fonction Minor_Check au contexte : " + e.getMessage());
-            }
-
-            // Évaluer la condition
-            if (evaluateCondition(preparedCondition, context)) {
-                // Étape 3 : Valider les règles des champs du workflow
-                if (workflow.validateField("CHAMP_TYPE_TITRE", object.getField("CHAMP_TYPE_TITRE"))) {
-                    //System.out.println("Workflow identifié : " + workflow.getName());
-                    return workflow;
-                }/* else {
-                    System.out.println("Condition remplie, mais le champ CHAMP_TYPE_TITRE ne correspond pas pour le workflow : " + workflow.getName());
-                }*/
-            }
-        }
-        return null;
-    }
-
 }
