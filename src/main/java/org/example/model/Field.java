@@ -6,10 +6,9 @@ public class Field {
     private String type;
     private boolean isObligatory;
 
-    public Field(String label, String type, boolean isObligatory) {
+    public Field(String label, String type) {
         this.label = label;
         this.type = type;
-        this.isObligatory = isObligatory;
     }
 
     public String getLabel() {

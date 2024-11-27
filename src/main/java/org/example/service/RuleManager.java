@@ -10,15 +10,162 @@ import org.mvel2.MVEL;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.util.function.Function;
+import java.time.LocalDate;
 
-public class RuleManager {
-    private List<RuleContainer> ruleContainers; // Liste de tous les containers chargés
+public class RuleManager implements IRuleManager {
+    private List<RuleContainer> ruleContainerList; // Liste de tous les containers chargés
+    private String ruleFile;
 
-    public RuleManager() {
+    private static final RuleManager INSTANCE = new RuleManager();
+
+    public static RuleManager getInstance() {
+        return INSTANCE;
+    }
+
+    private void loadRules() {
+
+        if(ruleContainerList == null) {
+            ruleContainerList = new ArrayList<>();
+        }
+
+        //TODO: load excel file
+
+        //RENOUVELLEMENT PSP SIMPLIFIE MINEUR
+        Workflow workflowMineur = new Workflow("PSP_RENOUVELLEMENT_SIMPLIFIE_MINEUR",
+                "TYPE_TITRE == 'PSP' && MINEUR_MAJEUR == 'MINEUR'");
+        List<Rule> ruleList = new ArrayList<>();
+        Rule ruleNom = new Rule();
+        ruleNom.setField(new Field("NOM", "TEXTE"));
+        ruleNom.setExpression("NOM != '' && NOM.length <= 22");
+
+        Rule ruleDateNaissance = new Rule();
+        ruleDateNaissance.setField(new Field("DATE_NAISSANCE", "DATE"));
+        ruleDateNaissance.setExpression("DATE_NAISSANCE != '' && DATE_FORMAT(DATE_NAISSANCE) == 'DD-MM-YYYY' && MINEUR(DATE_NAISSANCE)");
+
+        ruleList.add(ruleNom);
+        ruleList.add(ruleDateNaissance);
+
+        RuleContainer pspRSMineur = new RuleContainer(workflowMineur, ruleList);
+
+
+        //RENOUVELLEMENT PSP SIMPLIFIE MAJEUR
+        Workflow workflowMajeur = new Workflow("PSP_RENOUVELLEMENT_SIMPLIFIE_MAJEUR", "TYPE_TITRE == 'PSP' && MINEUR_MAJEUR == 'MAJEUR'");
+        List<Rule> ruleListMaj = new ArrayList<>();
+        Rule ruleNomMaj = new Rule();
+        ruleNomMaj.setField(new Field("NOM", "TEXTE"));
+        ruleNomMaj.setExpression("NOM != '' && NOM.length <= 22");
+
+        Rule ruleDateNaissanceMaj = new Rule();
+        ruleDateNaissanceMaj.setField(new Field("DATE_NAISSANCE", "DATE"));
+        ruleDateNaissanceMaj.setExpression("DATE_NAISSANCE != '' && DATE_FORMAT(DATE_NAISSANCE) == 'DD-MM-YYYY' && MAJEUR(DATE_NAISSANCE)");
+
+        ruleListMaj.add(ruleNomMaj);
+        ruleListMaj.add(ruleDateNaissanceMaj);
+
+        RuleContainer pspRSMajeur = new RuleContainer(workflowMajeur, ruleListMaj);
+
+        ruleContainerList.add(pspRSMineur);
+        ruleContainerList.add(pspRSMajeur);
+
+    }
+
+    public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
+        return this.ruleContainerList.stream()
+                .filter(ruleContainer -> this.evaludateExpression(ruleContainer.getWorkflow().getCondition(), fieldsToValidate))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception {
+
+        Map<String, ValidationResult> results = new HashMap<>();
+
+        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
+
+        if(ruleContainers == null || ruleContainers.isEmpty()) {
+            throw new Exception("Règles non chargées.");
+        }
+
+        for(RuleContainer ruleContainer: ruleContainers) {
+            System.out.println("Workflow :" + ruleContainer.getWorkflow().getName());
+            List<Rule> rules = ruleContainer.getRuleList();
+
+            rules.forEach(rule -> {
+                ValidationResult result = new ValidationResult();
+                boolean isValid = this.evaludateExpression(rule.getExpression(), fieldsToValidate);
+                result.setValid(isValid);
+                result.setMessage(isValid ? null : "Non valid");
+                results.put(rule.getField().getLabel(), result);
+            });
+
+        }
+
+        return results;
+    }
+
+    @Override
+    public void configure(String ruleFilePath) {
+        this.ruleFile = ruleFilePath;
+        this.loadRules();
+    }
+
+    public boolean evaludateExpression(String condition, Map<String, String> fieldsToValidate) {
+        //TODO: evaluate expression
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
+        Bindings bindings = engine.createBindings();
+        bindings.putAll(fieldsToValidate);
+        bindings.put("DATE_FORMAT", new DateFormatGetter());
+        bindings.put("MINEUR", new MinorVerifier());
+        bindings.put("MAJEUR", new MajorVerifier());
+
+        try {
+            Boolean r = (Boolean) engine.eval(condition, bindings);
+            return r;
+        } catch (ScriptException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private static class DateFormatGetter implements Function<String, String> {
+
+        @Override
+        public String apply(String s) {
+            //TODO: verify date format
+            return "DD-MM-YYYY";
+        }
+    }
+
+    private static class MinorVerifier implements Function<String, Boolean> {
+
+        @Override
+        public Boolean apply(String s) {
+            LocalDate date = LocalDate.parse(s);
+            int age = LocalDate.now().compareTo(date);
+            System.out.println("age =" + age);
+            return age < 18;
+        }
+    }
+
+    private static class MajorVerifier implements Function<String, Boolean> {
+
+        @Override
+        public Boolean apply(String s) {
+            LocalDate date = LocalDate.parse(s);
+            int age = LocalDate.now().compareTo(date);
+            System.out.println("age =" + age);
+            return age >= 18;
+        }
+    }
+   /* public RuleManager() {
         this.ruleContainers = new ArrayList<>();
     }
 
@@ -179,5 +326,7 @@ public class RuleManager {
             e.printStackTrace();
             return false;
         }
-    }
+    }*/
+
+
 }

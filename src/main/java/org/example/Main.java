@@ -1,7 +1,6 @@
 package org.example;
 
 import org.example.model.*;
-import org.example.service.RuleEngine;
 import org.example.service.RuleManager;
 
 import java.io.IOException;
@@ -10,73 +9,37 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
+        System.out.println("Hello world!");
 
-        // Initialiser RuleManager
-        RuleManager ruleManager = new RuleManager();
+        IValidator myValidator = new ValidatorImpl();
+        ValidatorParam param = new ValidatorParam("filePath/file.csv", ValidatorTypeEnum.DATA);
+        myValidator.start(param);
 
-        // Charger les données depuis un fichier Excel
-        String excelFilePath = "src/main/Configuration/RulesTest.xlsx";
-        try {
-            ruleManager.loadFromExcel(excelFilePath);
-            System.out.println("Données chargées avec succès depuis : " + excelFilePath);
-        } catch (Exception e) {
-            System.err.println("Erreur lors du chargement du fichier Excel : " + e.getMessage());
-            e.printStackTrace();
-            return;
+        System.out.println("------------DATA------------------");
+        Map<String, String> fieldsToValidate = new HashMap<>();
+        fieldsToValidate.put("NOM", "");
+        fieldsToValidate.put("DATE_NAISSANCE", "2009-01-01");
+        fieldsToValidate.put("MINEUR_MAJEUR", "MINEUR");
+        fieldsToValidate.put("TYPE_TITRE", "PSP");
+
+        for(Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
+            String field = entry.getKey();
+            String value = entry.getValue();
+
+            System.out.println(field + " : " + value);
         }
 
-        // Vérifier que les données ont bien été chargées
-        List<RuleContainer> ruleContainers = ruleManager.getRuleContainers();
-        if (ruleContainers.isEmpty()) {
-            System.out.println("Aucun container de règles chargé. Assurez-vous que le fichier Excel contient des données.");
-            return; // Arrêter l'exécution
-        } else {
-            System.out.println("Nombre de containers chargés : " + ruleContainers.size());
-            displayLoadedData(ruleContainers);
+        System.out.println("------------VALIDATION------------------");
+        Map<String, ValidationResult> validationResponse = myValidator.validate(fieldsToValidate);
+
+        System.out.println("------------RESULTAT------------------");
+        for(Map.Entry<String, ValidationResult> entry : validationResponse.entrySet()) {
+            String field = entry.getKey();
+            ValidationResult result = entry.getValue();
+
+            System.out.println(field + " : " + result.isValid());
         }
-
-        //  Initialiser RuleEngine
-        RuleEngine ruleEngine = new RuleEngine(ruleManager);
-
-
-        Map<String, Object> inputData = new HashMap<>();
-        inputData.put("CHAMP_PRENOM", "Imane");
-        inputData.put("CHAMP_DATE_NAISSANCE", "2001-09-22");
-        inputData.put("CHAMP_TYPE_TITRE", "PSP");
-
-        // Démarrer la validation
-        ruleEngine.start(inputData);
     }
-    private static void displayLoadedData(List<RuleContainer> ruleContainers) {
-        System.out.println("=== Contenu chargé ===");
-        for (RuleContainer container : ruleContainers) {
-            System.out.println("Workflow : " + container.getWorkflow().getName());
-            System.out.println("Condition du workflow : " + container.getWorkflow().getCondition());
-
-
-            System.out.println("Champs :");
-            for (Field field : container.getFields()) {
-                System.out.println("  - " + field.getLabel() + " (Type : " + field.getType() + ", Obligatoire : " + field.isObligatory() + ")");
-            }
-
-            System.out.println("Règles :");
-            for (Rule rule : container.getRules()) {
-                System.out.println("  - Règle ID : " + rule.getId());
-                System.out.println("    Conditions :");
-                for (Condition condition : rule.getConditions()) {
-                    System.out.println("      * " + condition.getExpression());
-                }
-            }
-
-            System.out.println("-------------------------------");
-        }
-
-
-    }
-
-
-
-
 }
