@@ -1,11 +1,8 @@
 package org.example;
 
 import org.example.model.*;
-import org.example.service.RuleManager;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Main {
@@ -14,15 +11,21 @@ public class Main {
         System.out.println("Hello world!");
 
         IValidator myValidator = new ValidatorImpl();
-        ValidatorParam param = new ValidatorParam("filePath/file.csv", ValidatorTypeEnum.DATA);
+        ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
         myValidator.start(param);
 
         System.out.println("------------DATA------------------");
         Map<String, String> fieldsToValidate = new HashMap<>();
-        fieldsToValidate.put("NOM", "");
-        fieldsToValidate.put("DATE_NAISSANCE", "2009-01-01");
-        fieldsToValidate.put("MINEUR_MAJEUR", "MINEUR");
+        fieldsToValidate.put("PRENOM", "Aline");
+        fieldsToValidate.put("NOM", "Zhang");
+        fieldsToValidate.put("DATE_NAISSANCE", "01/01/2009");
+        fieldsToValidate.put("STATUT", "minor");
         fieldsToValidate.put("TYPE_TITRE", "PSP");
+        fieldsToValidate.put("SEXE", "femme");
+        fieldsToValidate.put("PRENOM_USUEL", "Aline");
+        fieldsToValidate.put("TAILLE", "1.55");
+        fieldsToValidate.put("PAYS_NAISSANCE", "france");
+        fieldsToValidate.put("DEPARTEMENT_NAISSANCE", "011");
 
         for(Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
             String field = entry.getKey();

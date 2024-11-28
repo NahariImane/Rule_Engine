@@ -5,19 +5,18 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.ValidationFunctions.*;
 import org.example.model.*;
-import org.mvel2.MVEL;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.util.function.Function;
-import java.time.LocalDate;
 
 public class RuleManager implements IRuleManager {
     private List<RuleContainer> ruleContainerList; // Liste de tous les containers chargés
@@ -29,151 +28,14 @@ public class RuleManager implements IRuleManager {
         return INSTANCE;
     }
 
-    private void loadRules() {
+    /************************************Load rule***********************************/
+    private void loadRules() throws IOException{
 
         if(ruleContainerList == null) {
             ruleContainerList = new ArrayList<>();
         }
 
-        //TODO: load excel file
-
-        //RENOUVELLEMENT PSP SIMPLIFIE MINEUR
-        Workflow workflowMineur = new Workflow("PSP_RENOUVELLEMENT_SIMPLIFIE_MINEUR",
-                "TYPE_TITRE == 'PSP' && MINEUR_MAJEUR == 'MINEUR'");
-        List<Rule> ruleList = new ArrayList<>();
-        Rule ruleNom = new Rule();
-        ruleNom.setField(new Field("NOM", "TEXTE"));
-        ruleNom.setExpression("NOM != '' && NOM.length <= 22");
-
-        Rule ruleDateNaissance = new Rule();
-        ruleDateNaissance.setField(new Field("DATE_NAISSANCE", "DATE"));
-        ruleDateNaissance.setExpression("DATE_NAISSANCE != '' && DATE_FORMAT(DATE_NAISSANCE) == 'DD-MM-YYYY' && MINEUR(DATE_NAISSANCE)");
-
-        ruleList.add(ruleNom);
-        ruleList.add(ruleDateNaissance);
-
-        RuleContainer pspRSMineur = new RuleContainer(workflowMineur, ruleList);
-
-
-        //RENOUVELLEMENT PSP SIMPLIFIE MAJEUR
-        Workflow workflowMajeur = new Workflow("PSP_RENOUVELLEMENT_SIMPLIFIE_MAJEUR", "TYPE_TITRE == 'PSP' && MINEUR_MAJEUR == 'MAJEUR'");
-        List<Rule> ruleListMaj = new ArrayList<>();
-        Rule ruleNomMaj = new Rule();
-        ruleNomMaj.setField(new Field("NOM", "TEXTE"));
-        ruleNomMaj.setExpression("NOM != '' && NOM.length <= 22");
-
-        Rule ruleDateNaissanceMaj = new Rule();
-        ruleDateNaissanceMaj.setField(new Field("DATE_NAISSANCE", "DATE"));
-        ruleDateNaissanceMaj.setExpression("DATE_NAISSANCE != '' && DATE_FORMAT(DATE_NAISSANCE) == 'DD-MM-YYYY' && MAJEUR(DATE_NAISSANCE)");
-
-        ruleListMaj.add(ruleNomMaj);
-        ruleListMaj.add(ruleDateNaissanceMaj);
-
-        RuleContainer pspRSMajeur = new RuleContainer(workflowMajeur, ruleListMaj);
-
-        ruleContainerList.add(pspRSMineur);
-        ruleContainerList.add(pspRSMajeur);
-
-    }
-
-    public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
-        return this.ruleContainerList.stream()
-                .filter(ruleContainer -> this.evaludateExpression(ruleContainer.getWorkflow().getCondition(), fieldsToValidate))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception {
-
-        Map<String, ValidationResult> results = new HashMap<>();
-
-        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
-
-        if(ruleContainers == null || ruleContainers.isEmpty()) {
-            throw new Exception("Règles non chargées.");
-        }
-
-        for(RuleContainer ruleContainer: ruleContainers) {
-            System.out.println("Workflow :" + ruleContainer.getWorkflow().getName());
-            List<Rule> rules = ruleContainer.getRuleList();
-
-            rules.forEach(rule -> {
-                ValidationResult result = new ValidationResult();
-                boolean isValid = this.evaludateExpression(rule.getExpression(), fieldsToValidate);
-                result.setValid(isValid);
-                result.setMessage(isValid ? null : "Non valid");
-                results.put(rule.getField().getLabel(), result);
-            });
-
-        }
-
-        return results;
-    }
-
-    @Override
-    public void configure(String ruleFilePath) {
-        this.ruleFile = ruleFilePath;
-        this.loadRules();
-    }
-
-    public boolean evaludateExpression(String condition, Map<String, String> fieldsToValidate) {
-        //TODO: evaluate expression
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-
-        Bindings bindings = engine.createBindings();
-        bindings.putAll(fieldsToValidate);
-        bindings.put("DATE_FORMAT", new DateFormatGetter());
-        bindings.put("MINEUR", new MinorVerifier());
-        bindings.put("MAJEUR", new MajorVerifier());
-
-        try {
-            Boolean r = (Boolean) engine.eval(condition, bindings);
-            return r;
-        } catch (ScriptException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private static class DateFormatGetter implements Function<String, String> {
-
-        @Override
-        public String apply(String s) {
-            //TODO: verify date format
-            return "DD-MM-YYYY";
-        }
-    }
-
-    private static class MinorVerifier implements Function<String, Boolean> {
-
-        @Override
-        public Boolean apply(String s) {
-            LocalDate date = LocalDate.parse(s);
-            int age = LocalDate.now().compareTo(date);
-            System.out.println("age =" + age);
-            return age < 18;
-        }
-    }
-
-    private static class MajorVerifier implements Function<String, Boolean> {
-
-        @Override
-        public Boolean apply(String s) {
-            LocalDate date = LocalDate.parse(s);
-            int age = LocalDate.now().compareTo(date);
-            System.out.println("age =" + age);
-            return age >= 18;
-        }
-    }
-   /* public RuleManager() {
-        this.ruleContainers = new ArrayList<>();
-    }
-
-    // Méthode pour charger les données depuis Excel
-
-    // Charge les workflows, champs et règles depuis un fichier Excel
-    public void loadFromExcel(String filePath) throws IOException {
-        try (FileInputStream file = new FileInputStream(filePath);
+        try (FileInputStream file = new FileInputStream(ruleFile);
              Workbook workbook = new XSSFWorkbook(file)) {
 
             // Lecture de la première feuille du fichier Excel
@@ -187,13 +49,11 @@ public class RuleManager implements IRuleManager {
                 Workflow workflow = parseWorkflow(row);
 
                 // Lire les champs et les règles associées
-                List<Field> fields = new ArrayList<>();
                 List<Rule> rules = new ArrayList<>();
                 for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
                     Field field = parseField(row, headerRow, col);
                     if (field != null) {
-                        fields.add(field);
-                        Rule rule = parseRule(row, headerRow, col);
+                        Rule rule = parseRule(row, headerRow, col,field);
                         if (rule != null) {
                             rules.add(rule);
                         }
@@ -201,10 +61,11 @@ public class RuleManager implements IRuleManager {
                 }
 
                 // Ajouter un RuleContainer avec le workflow, ses champs et ses règles
-                RuleContainer container = new RuleContainer(workflow, fields, rules);
-                ruleContainers.add(container);
+                RuleContainer container = new RuleContainer(workflow, rules);
+                ruleContainerList.add(container);
             }
         }
+//        this.printRule();
     }
 
     // Méthode pour parser un Workflow
@@ -215,14 +76,14 @@ public class RuleManager implements IRuleManager {
     }
 
 
-
-
     private Field parseField(Row row, Row headerRow, int col) {
         // Récupérer la cellule contenant "YES" ou "NO"
         Cell champCell = row.getCell(col);
 
         // Initialiser les valeurs par défaut
         String fieldName = headerRow.getCell(col).getStringCellValue().trim(); // Nom du champ
+        fieldName = fieldName.replace("CHAMP_","");
+
         boolean isObligatory = false; // Valeur par défaut : non obligatoire
         String fieldType = ""; // Type par défaut : vide
 
@@ -242,91 +103,156 @@ public class RuleManager implements IRuleManager {
         return new Field(fieldName, fieldType, isObligatory);
     }
 
-
-
-    private List<Condition> parseConditions(String ruleExpression) {
-        // Liste pour stocker les objets Condition
-        List<Condition> conditions = new ArrayList<>();
-
-        // Séparer l'expression en sous-conditions en utilisant "&&" ou "||" comme séparateurs
-        // Utilisation de regex pour détecter "&&" et "||" comme séparateurs
-        String[] conditionParts = ruleExpression.split("\\s*(&&|\\|\\|)\\s*");
-
-        // Créer un objet Condition pour chaque partie et l'ajouter à la liste
-        for (String conditionPart : conditionParts) {
-            conditions.add(new Condition(conditionPart.trim()));
-        }
-
-        return conditions;
-    }
-
-
-
-    private Rule parseRule(Row row, Row headerRow, int col) {
+    private Rule parseRule(Row row, Row headerRow, int col, Field field) {
         // Lecture des cellules dans la colonne pour le champ et la règle
         Cell champCell = row.getCell(col);
         Cell ruleCell = row.getCell(col + 1); // Colonne contenant l'expression de la règle
 
         // Vérifier que la colonne "CHAMP" est marquée "YES" et que la règle est définie
         if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && ruleCell != null) {
-            // Récupérer l'identifiant de la règle à partir de l'en-tête
-            String ruleId = headerRow.getCell(col+1).getStringCellValue().trim();
-
             // Récupérer l'expression  de la règle (entière)
             String ruleExpression = ruleCell.getStringCellValue().trim();
 
-            // Découper l'expression en conditions individuelles
-            List<Condition> parsedConditions = parseConditions(ruleExpression);
-
             // Retourner une instance de Rule avec son ID et ses conditions
-            return new Rule(ruleId, parsedConditions);
+            Rule rule = new Rule();
+            rule.setField(field);
+            rule.setExpression(ruleExpression);
+            return rule;
         }
+
         return null; // Retourner null si aucune règle n'est valide
     }
 
-
-
-
-    // Retourne les containers chargés
-    public List<RuleContainer> getRuleContainers() {
-        return ruleContainers;
-    }
-    public RuleContainer identifyWorkflow(Map<String, Object> inputData) {
-        for (RuleContainer container : ruleContainers) {
-            if (evaluateCondition(container.getWorkflow().getCondition(), inputData)) {
-                return container;
+    private void printRule(){
+        for (RuleContainer ruleConainer : this.ruleContainerList){
+            System.out.println("workflow : " + ruleConainer.getWorkflow().getName());
+            System.out.println("  condition : " + ruleConainer.getWorkflow().getCondition());
+            for(Rule rule : ruleConainer.getRuleList()){
+                System.out.println("    champ : " + rule.getField().getLabel());
+                System.out.println("    regle : " + rule.getExpression());
             }
         }
-        return null;
     }
 
-    // Nouvelle méthode pour identifier tous les workflows applicables
-    public List<RuleContainer> identifyWorkflows(Map<String, Object> inputData) {
-        List<RuleContainer> applicableContainers = new ArrayList<>();
-        for (RuleContainer container : ruleContainers) {
-            if (evaluateCondition(container.getWorkflow().getCondition(), inputData)) {
-                applicableContainers.add(container);
+
+
+    /****************************************Valide***********************************/
+
+
+    public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
+        return this.ruleContainerList.stream()
+                .filter(ruleContainer -> this.evaluateExpressionCondition(ruleContainer.getWorkflow().getCondition(), fieldsToValidate))
+                .collect(Collectors.toList());
+    }
+
+    private String findFieldValueWithRule(Rule rule, Map<String, String> fieldsToValidate)  {
+        String value = null;
+        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
+            if(entry.getKey().equals(rule.getField().getLabel())){
+                value = entry.getValue();
             }
         }
-        return applicableContainers;
+        return value;
     }
 
+    @Override
+    public Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception {
 
-    private boolean evaluateCondition(String condition, Map<String, Object> inputData) {
+        Map<String, ValidationResult> results = new HashMap<>();
+
+        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
+
+        if(ruleContainers == null || ruleContainers.isEmpty()) {
+            throw new Exception("Règles non chargées.");
+        }
+
+        for(RuleContainer ruleContainer: ruleContainers) {
+            System.out.println("Workflow :" + ruleContainer.getWorkflow().getName());
+            List<Rule> rules = ruleContainer.getRuleList();
+            rules.forEach(rule -> {
+                ValidationResult result = new ValidationResult();
+
+                //checher la regle correspondant au de à la valeur du champ
+                String value = this.findFieldValueWithRule(rule,fieldsToValidate);
+
+                boolean isValid = this.evaluateExpressionField(rule.getExpression(),fieldsToValidate, value);
+                result.setValid(isValid);
+                result.setMessage(isValid ? null : "Non valid");
+                results.put(rule.getField().getLabel(), result);
+
+            });
+        }
+
+        return results;
+    }
+
+    @Override
+    public void configure(String ruleFilePath) throws IOException {
+        this.ruleFile = ruleFilePath;
+        this.loadRules();
+    }
+
+    public boolean evaluateExpressionCondition(String condition, Map<String, String> fieldsToValidate) {
+        //TODO: evaluate expression
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
+        Bindings bindings = engine.createBindings();
+        bindings.putAll(fieldsToValidate);
+        bindings.put("Date_Format", new IsValidDateFormat());
+        bindings.put("Major_Check", new Major_Check());
+        bindings.put("Minor_Check", new Minor_Check());
+
+        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
+            condition = condition.replace("%" + entry.getKey() + "%", "\"" + entry.getValue() + "\"");
+        }
+        condition = condition.replace("\"null\"", "null");
         try {
-            // Remplacez les placeholders (%CHAMP_XXX%) par les valeurs correspondantes
-            for (Map.Entry<String, Object> entry : inputData.entrySet()) {
-                condition = condition.replace("%" + entry.getKey() + "%", "\"" + entry.getValue().toString() + "\"");
-            }
-
-            // Utilisation de MVEL pour évaluer l'expression
-            return (Boolean) MVEL.eval(condition);
-        } catch (Exception e) {
+            Boolean r = (Boolean) engine.eval(condition, bindings);
+            return r;
+        } catch (ScriptException e) {
             System.err.println("Erreur lors de l'évaluation de la condition : " + condition);
             e.printStackTrace();
             return false;
         }
-    }*/
+    }
+
+    public boolean evaluateExpressionField(String condition,Map<String, String> fieldsToValidate, String value) {
+        //TODO: evaluate expression
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+
+        Bindings bindings = engine.createBindings();
+        bindings.put("Date_Format", new IsValidDateFormat());
+        bindings.put("Major_Check", new Major_Check());
+        bindings.put("Minor_Check", new Minor_Check());
+        bindings.put("Len_Check", new Len_Check());
+        bindings.put("IsValidName", new IsValidName());
+        bindings.put("IsMinor", new IsMinor());
+        bindings.put("IsMajor", new IsMajor());
+        bindings.put("BornInFrance", new BornInFrance());
+
+
+
+        condition = condition.replace("%value%", "\"" + value + "\"");
+        condition = condition.replace("\"null\"", "null");
+
+        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
+//            System.out.println("key : " + entry.getKey());
+//            System.out.println("value : " + entry.getValue());
+            condition = condition.replace("%" + entry.getKey() + "%", "\"" + entry.getValue() + "\"");
+        }
+
+//        System.out.println("value : "  + value);
+//        System.out.println("condition : " + condition);
+        try {
+            Boolean r = (Boolean) engine.eval(condition, bindings);
+            return r;
+        } catch (ScriptException e) {
+            System.err.println("Erreur lors de l'évaluation de l'expression : " + condition);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 
 }

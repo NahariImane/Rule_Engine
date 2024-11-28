@@ -2,6 +2,7 @@ package org.example.model;
 
 import org.example.service.RuleManager;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class ValidatorImpl  implements IValidator{
@@ -12,7 +13,7 @@ public class ValidatorImpl  implements IValidator{
     }
 
     @Override
-    public void start(ValidatorParam param) {
+    public void start(ValidatorParam param) throws IOException {
         this.ruleManager = RuleManager.getInstance();
         this.ruleManager.configure(param.getRuleFile());
     }
