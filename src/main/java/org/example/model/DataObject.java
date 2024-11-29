@@ -5,26 +5,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataObject {
-    private Map<String , Object> fields = new HashMap<>();
+    private Map<String , Object> fields ;
 
-   /* public DataObject(){
+    public DataObject(){
         this.fields = new HashMap<>();
-    }*/
-
-    public void setField(String fieldName, Object value) {
-        fields.put(fieldName, value);
     }
 
-    public Object getField(String fieldName) {
-        //return fields.get(fieldName);
-        return fields.getOrDefault(fieldName, null);
+    // Ajouter un champ dynamiquement
+    public void addField(String fieldName, Object value) {
+        this.fields.put(fieldName, value);
     }
+
+    // Récupérer la valeur d'un champ
+    public Object getFieldValue(String fieldName) {
+        return this.fields.get(fieldName);
+    }
+
+    // Récupérer tous les champs
     public Map<String, Object> getFields() {
         return fields;
     }
-    @Override
-    public String toString() {
-        return "DataObject[fields=" + fields + "]";
-    }
+
 
 }

@@ -60,7 +60,7 @@ public class RuleManager implements IRuleManager {
                     }
                 }
 
-                // Ajouter un RuleContainer avec le workflow, ses champs et ses règles
+                // Ajouter un RuleContainer avec le workflow et ses règles
                 RuleContainer container = new RuleContainer(workflow, rules);
                 ruleContainerList.add(container);
             }
@@ -113,7 +113,7 @@ public class RuleManager implements IRuleManager {
             // Récupérer l'expression  de la règle (entière)
             String ruleExpression = ruleCell.getStringCellValue().trim();
 
-            // Retourner une instance de Rule avec son ID et ses conditions
+            // Retourner une instance de Rule et son expression
             Rule rule = new Rule();
             rule.setField(field);
             rule.setExpression(ruleExpression);
@@ -157,6 +157,9 @@ public class RuleManager implements IRuleManager {
 
     @Override
     public Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception {
+
+        DataObject input = new DataObject();
+        fieldsToValidate.forEach(input::addField);
 
         Map<String, ValidationResult> results = new HashMap<>();
 
@@ -229,6 +232,7 @@ public class RuleManager implements IRuleManager {
         bindings.put("IsMinor", new IsMinor());
         bindings.put("IsMajor", new IsMajor());
         bindings.put("BornInFrance", new BornInFrance());
+        bindings.put("IsValidTaille", new IsValidTaille());
 
 
 

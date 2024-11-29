@@ -8,7 +8,6 @@ import java.util.function.Function;
 public class ValidationFunctions {
 
     public static class Minor_Check implements Function<String, Boolean> {
-
         @Override
         public Boolean apply(String birthDate) {
             try {
@@ -29,7 +28,6 @@ public class ValidationFunctions {
     }
 
     public static class Major_Check implements Function<String, Boolean> {
-
         @Override
         public Boolean apply(String birthDate) {
             try {
@@ -50,7 +48,6 @@ public class ValidationFunctions {
     }
 
     public static class IsValidDateFormat implements Function<String, Boolean> {
-
         @Override
         public Boolean apply(String date) {
             // Regex pour vérifier les formats
@@ -69,7 +66,6 @@ public class ValidationFunctions {
 
     // Len_Check implementation
     public static class Len_Check implements LengthCheck {
-
         @Override
         public boolean apply(String s, int min, int max) {
             try {
@@ -86,8 +82,9 @@ public class ValidationFunctions {
         @Override
         public Boolean apply(String name) {
             try {
-                String allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz»«\"'()-/.,ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸŒàáâãäåæçèéêëìíîïñòóôõöùúûüýÿœ";
-                String regex = "^[" + allowedCharacters + "]*$";
+                //String allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz»«\"'()-/.,ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸŒàáâãäåæçèéêëìíîïñòóôõöùúûüýÿœ";
+                //String regex = "^[" + allowedCharacters + "]*$";
+                String regex = "^[\\p{L}\\p{M}'\"()\\-/,À-ÖØ-öø-ÿŒœŸÝ]+$";
 
                 // Vérifier si l'entrée correspond à la regex
                 return name.matches(regex);
@@ -134,4 +131,24 @@ public class ValidationFunctions {
             }
         }
     }
+
+    public static class IsValidTaille implements Function<String, Boolean> {
+        @Override
+        public Boolean apply(String value) {
+            try {
+                if (value == null) return false;
+
+                // Vérifie si la valeur est un nombre flottant compris entre 0.5 et 3.0
+                if (value.matches("^[0-9]+(\\.[0-9]+)?$")) {
+                    float taille = Float.parseFloat(value);
+                    return taille >= 0.5f && taille <= 3.0f;
+                }
+                return false;
+            } catch (NumberFormatException e) {
+                System.err.println("Erreur lors de l'évaluation de IsValidTaille : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
 }
