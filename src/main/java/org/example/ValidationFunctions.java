@@ -99,7 +99,7 @@ public class ValidationFunctions {
         @Override
         public Boolean apply(String statut) {
             try {
-                return statut.equals("minor");
+                return statut.equals("mineur");
             } catch (Exception e) {
                 System.err.println("Erreur lors de l'évaluation de IsMinor : " + e.getMessage());
                 return false;
@@ -111,7 +111,7 @@ public class ValidationFunctions {
         @Override
         public Boolean apply(String statut) {
             try {
-                return statut.equals("major");
+                return statut.equals("majeur");
             } catch (Exception e) {
                 System.err.println("Erreur lors de l'évaluation de IsMajor : " + e.getMessage());
                 return false;

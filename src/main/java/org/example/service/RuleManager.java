@@ -29,6 +29,12 @@ public class RuleManager implements IRuleManager {
     }
 
     /************************************Load rule***********************************/
+    @Override
+    public void configure(String ruleFilePath) throws IOException {
+        this.ruleFile = ruleFilePath;
+        this.loadRules();
+    }
+
     private void loadRules() throws IOException{
 
         if(ruleContainerList == null) {
@@ -138,23 +144,6 @@ public class RuleManager implements IRuleManager {
 
     /****************************************Valide***********************************/
 
-
-    public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
-        return this.ruleContainerList.stream()
-                .filter(ruleContainer -> this.evaluateExpressionCondition(ruleContainer.getWorkflow().getCondition(), fieldsToValidate))
-                .collect(Collectors.toList());
-    }
-
-    private String findFieldValueWithRule(Rule rule, Map<String, String> fieldsToValidate)  {
-        String value = null;
-        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
-            if(entry.getKey().equals(rule.getField().getLabel())){
-                value = entry.getValue();
-            }
-        }
-        return value;
-    }
-
     @Override
     public Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception {
 
@@ -175,10 +164,11 @@ public class RuleManager implements IRuleManager {
             rules.forEach(rule -> {
                 ValidationResult result = new ValidationResult();
 
-                //checher la regle correspondant au de à la valeur du champ
-                String value = this.findFieldValueWithRule(rule,fieldsToValidate);
+                //checher la regle correspondant à la valeur du champ et ajouter à fieldsToValidate
+                // nouvelle key = "value" , value = valeur trouvée sinon null
+                this.addFieldValueWithRule(rule,fieldsToValidate);
 
-                boolean isValid = this.evaluateExpressionField(rule.getExpression(),fieldsToValidate, value);
+                boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
                 result.setValid(isValid);
                 result.setMessage(isValid ? null : "Non valid");
                 results.put(rule.getField().getLabel(), result);
@@ -189,41 +179,30 @@ public class RuleManager implements IRuleManager {
         return results;
     }
 
-    @Override
-    public void configure(String ruleFilePath) throws IOException {
-        this.ruleFile = ruleFilePath;
-        this.loadRules();
+    public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
+        return this.ruleContainerList.stream()
+                .filter(ruleContainer -> this.evaluateExpression(ruleContainer.getWorkflow().getCondition(), fieldsToValidate))
+                .collect(Collectors.toList());
     }
 
-    public boolean evaluateExpressionCondition(String condition, Map<String, String> fieldsToValidate) {
+    private void addFieldValueWithRule(Rule rule, Map<String, String> fieldsToValidate)  {
+        String value = null;
+        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
+            if(entry.getKey().equals(rule.getField().getLabel())){
+                value = entry.getValue();
+            }
+        }
+        fieldsToValidate.put("value",value);
+    }
+
+
+
+    public boolean evaluateExpression(String condition, Map<String, String> fieldsToValidate) {
         //TODO: evaluate expression
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
         Bindings bindings = engine.createBindings();
         bindings.putAll(fieldsToValidate);
-        bindings.put("Date_Format", new IsValidDateFormat());
-        bindings.put("Major_Check", new Major_Check());
-        bindings.put("Minor_Check", new Minor_Check());
-
-        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
-            condition = condition.replace("%" + entry.getKey() + "%", "\"" + entry.getValue() + "\"");
-        }
-        condition = condition.replace("\"null\"", "null");
-        try {
-            Boolean r = (Boolean) engine.eval(condition, bindings);
-            return r;
-        } catch (ScriptException e) {
-            System.err.println("Erreur lors de l'évaluation de la condition : " + condition);
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean evaluateExpressionField(String condition,Map<String, String> fieldsToValidate, String value) {
-        //TODO: evaluate expression
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-
-        Bindings bindings = engine.createBindings();
         bindings.put("Date_Format", new IsValidDateFormat());
         bindings.put("Major_Check", new Major_Check());
         bindings.put("Minor_Check", new Minor_Check());
@@ -235,18 +214,9 @@ public class RuleManager implements IRuleManager {
         bindings.put("IsValidTaille", new IsValidTaille());
 
 
-
-        condition = condition.replace("%value%", "\"" + value + "\"");
-        condition = condition.replace("\"null\"", "null");
-
-        for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
-//            System.out.println("key : " + entry.getKey());
-//            System.out.println("value : " + entry.getValue());
-            condition = condition.replace("%" + entry.getKey() + "%", "\"" + entry.getValue() + "\"");
-        }
-
-//        System.out.println("value : "  + value);
+//        System.out.println("value : "  + fieldsToValidate.get("value"));
 //        System.out.println("condition : " + condition);
+
         try {
             Boolean r = (Boolean) engine.eval(condition, bindings);
             return r;
