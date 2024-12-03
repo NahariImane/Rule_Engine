@@ -1,8 +1,11 @@
 package org.example;
 
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public class ValidationFunctions {
@@ -47,7 +50,7 @@ public class ValidationFunctions {
         }
     }
 
-    public static class IsValidDateFormat implements Function<String, Boolean> {
+    public static class Valid_Date implements Function<String, Boolean> {
         @Override
         public Boolean apply(String date) {
             // Regex pour vérifier les formats
@@ -60,19 +63,55 @@ public class ValidationFunctions {
 
     // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface LengthCheck {
+    public interface ILength_Between {
         boolean apply(String s, int min, int max);
     }
 
     // Len_Check implementation
-    public static class Len_Check implements LengthCheck {
+    public static class Length_Between implements ILength_Between {
         @Override
         public boolean apply(String s, int min, int max) {
             try {
                 // Validate if the name length is within the range
                 return s.length() >= min && s.length() <= max;
             } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de Len_Check : " + e.getMessage());
+                System.err.println("Erreur lors de l'évaluation de Length_Between : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    // Custom functional interface Len_Check
+    @FunctionalInterface
+    public interface ILength_Greater {
+        boolean apply(String s, int max);
+    }
+
+    public static class Length_Greater_Than implements ILength_Greater {
+        @Override
+        public boolean apply(String s, int n) {
+            try {
+                return s.length() > n;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de Length_Greater : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    // Custom functional interface Len_Check
+    @FunctionalInterface
+    public interface ILength_Less_Than {
+        boolean apply(String s, int n);
+    }
+
+    public static class Length_Less_Than implements ILength_Less_Than {
+        @Override
+        public boolean apply(String s, int n) {
+            try {
+                return s.length() < n;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de Length_Greater : " + e.getMessage());
                 return false;
             }
         }
@@ -95,38 +134,30 @@ public class ValidationFunctions {
         }
     }
 
-    public static class  IsMinor implements Function<String,Boolean> {
-        @Override
-        public Boolean apply(String statut) {
-            try {
-                return statut.equals("mineur");
-            } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de IsMinor : " + e.getMessage());
-                return false;
-            }
-        }
-    }
-
-    public static class  IsMajor implements Function<String,Boolean> {
-        @Override
-        public Boolean apply(String statut) {
-            try {
-                return statut.equals("majeur");
-            } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de IsMajor : " + e.getMessage());
-                return false;
-            }
-        }
-    }
 
     public static class  BornInFrance implements Function<String,Boolean> {
         @Override
         public Boolean apply(String pays) {
             try {
-
-                return "france".equals(pays);
+                String[] stringList = {"france","Frane","FRANCE"};
+                for(String s : stringList){
+                    if(s.equals(pays)) return true;
+                }
+                return false;
             } catch (Exception e) {
                 System.err.println("Erreur lors de l'évaluation de BornInFrance : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    public static class  IsNumber implements Function<String,Boolean> {
+        @Override
+        public Boolean apply(String department) {
+            try {
+                Integer.parseInt(department);
+                return true;
+            } catch (Exception e) {
                 return false;
             }
         }
@@ -146,6 +177,51 @@ public class ValidationFunctions {
                 return false;
             } catch (NumberFormatException e) {
                 System.err.println("Erreur lors de l'évaluation de IsValidTaille : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+
+    @FunctionalInterface
+    public interface IBelongTo {
+        Boolean apply(String value, String list);
+    }
+    public static class  BelongTo implements IBelongTo {
+        @Override
+        public Boolean apply(String value, String list) {
+            try {
+                String[] l = list.split(",\\s*");
+                for(String s : l){
+                    if(value.equals(s)) return true;
+                }
+                return false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de BelongTo : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    public static class NotNull implements Function<String, Boolean> {
+        @Override
+        public Boolean apply(String value) {
+            try {
+                return value!=null;
+            } catch (NumberFormatException e) {
+                System.err.println("Erreur lors de l'évaluation de NotNull : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    public static class IsNull implements Function<String, Boolean> {
+        @Override
+        public Boolean apply(String value) {
+            try {
+                return value==null;
+            } catch (NumberFormatException e) {
+                System.err.println("Erreur lors de l'évaluation de IsNull : " + e.getMessage());
                 return false;
             }
         }

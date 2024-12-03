@@ -161,6 +161,8 @@ public class RuleManager implements IRuleManager {
         for(RuleContainer ruleContainer: ruleContainers) {
             System.out.println("Workflow :" + ruleContainer.getWorkflow().getName());
             List<Rule> rules = ruleContainer.getRuleList();
+            //complete la liste s'il y a des champs manquant avec null comme value
+            Map<String,String> fieldsToValidateComplete = this.completeMissingField(fieldsToValidate,rules);
             rules.forEach(rule -> {
                 ValidationResult result = new ValidationResult();
 
@@ -177,6 +179,14 @@ public class RuleManager implements IRuleManager {
         }
 
         return results;
+    }
+
+    private Map<String,String> completeMissingField(Map<String,String> fieldsToValidate,List<Rule> rules){
+        Map<String,String> result = new HashMap<>(fieldsToValidate);
+        for(Rule rule : rules){
+            fieldsToValidate.putIfAbsent(rule.getField().getLabel(),null);
+        }
+        return result;
     }
 
     public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
@@ -203,15 +213,19 @@ public class RuleManager implements IRuleManager {
 
         Bindings bindings = engine.createBindings();
         bindings.putAll(fieldsToValidate);
-        bindings.put("Date_Format", new IsValidDateFormat());
+        bindings.put("Valid_Date", new Valid_Date());
         bindings.put("Major_Check", new Major_Check());
         bindings.put("Minor_Check", new Minor_Check());
-        bindings.put("Len_Check", new Len_Check());
+        bindings.put("Length_Between", new Length_Between());
         bindings.put("IsValidName", new IsValidName());
-        bindings.put("IsMinor", new IsMinor());
-        bindings.put("IsMajor", new IsMajor());
         bindings.put("BornInFrance", new BornInFrance());
+        bindings.put("IsNumber", new IsNumber());
         bindings.put("IsValidTaille", new IsValidTaille());
+        bindings.put("Length_Less_Than", new Length_Less_Than());
+        bindings.put("Length_Greater_Than", new Length_Greater_Than());
+        bindings.put("BelongTo", new BelongTo());
+        bindings.put("NotNull", new NotNull());
+        bindings.put("IsNull", new IsNull());
 
 
 //        System.out.println("value : "  + fieldsToValidate.get("value"));

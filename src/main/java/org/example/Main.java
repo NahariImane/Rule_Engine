@@ -29,6 +29,9 @@ public class Main {
         input.addField("PAYS_NAISSANCE", "france");
         input.addField("DEPARTEMENT_NAISSANCE", "91");
         input.addField("TAILLE", "1.63");
+        input.addField("YEUX", "marron");
+//        input.addField("NOM_USAGE", "marron");
+        input.addField("ORIGINE_NOM_USAGE", "Père");
 
         // Affichage des données ajoutées dans DataObject
         System.out.println("------------DATA FROM DataObject------------------");
