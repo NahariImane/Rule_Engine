@@ -22,7 +22,7 @@ public class ValidatorImpl  implements IValidator {
     }
 
     @Override
-    public DataObject loadData(String jsonDataFile) {
+    public DataObject convertJsonToDataObject(String jsonDataFile) {
         DataObject data = new DataObject();
         ObjectMapper objectMapper = new ObjectMapper();
 

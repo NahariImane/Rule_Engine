@@ -1,17 +1,11 @@
 package org.example.test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.model.*;
 import org.example.service.ValidatorImpl;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
-public class Main {
+public class Test {
     public static void main(String[] args) throws Exception {
 
 
@@ -21,7 +15,7 @@ public class Main {
         myValidator.start(param);
 
 
-        DataObject data = myValidator.loadData("src/main/java/org/example/test/dataTest.json");
+        DataObject data = myValidator.convertJsonToDataObject("src/main/java/org/example/test/dataTest.json");
 
         // Affichage des données ajoutées dans DataObject
         System.out.println("------------DATA FROM DataObject------------------");

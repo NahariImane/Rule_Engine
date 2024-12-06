@@ -56,10 +56,10 @@ public class RuleManager implements IRuleManager {
 
                 // Lire les champs et les règles associées
                 List<Rule> rules = new ArrayList<>();
-                for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
-                    Field field = parseField(row, headerRow, col);
+                for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
+                    Field field = parseField(headerRow, col);
                     if (field != null) {
-                        Rule rule = parseRule(row, headerRow, col,field);
+                        Rule rule = parseRule(row, col,field);
                         if (rule != null) {
                             rules.add(rule);
                         }
@@ -81,35 +81,16 @@ public class RuleManager implements IRuleManager {
         return new Workflow(workflowName, condition);
     }
 
-
-    private Field parseField(Row row, Row headerRow, int col) {
-        // Récupérer la cellule contenant "YES" ou "NO"
-        Cell champCell = row.getCell(col);
-
+    private Field parseField(Row headerRow, int col) {
         // Initialiser les valeurs par défaut
         String fieldName = headerRow.getCell(col).getStringCellValue().trim(); // Nom du champ
         fieldName = fieldName.replace("CHAMP_","");
-
-        boolean isObligatory = false; // Valeur par défaut : non obligatoire
-        String fieldType = ""; // Type par défaut : vide
-
-        // Vérification de l'état "YES" ou "NO"
-        if (champCell != null) {
-            String cellValue = champCell.getStringCellValue().trim();
-            isObligatory = "YES".equalsIgnoreCase(cellValue); // Définir si obligatoire
-        }
-
-        // Lecture du type depuis la colonne TYPE_... (col+2)
-        Cell typeCell = row.getCell(col + 2);
-        if (typeCell != null) {
-            fieldType = typeCell.getStringCellValue().trim();
-        }
 
         // Créer et retourner une instance de Field
         return new Field(fieldName);
     }
 
-    private Rule parseRule(Row row, Row headerRow, int col, Field field) {
+    private Rule parseRule(Row row,  int col, Field field) {
         // Lecture des cellules dans la colonne pour le champ et la règle
         Cell champCell = row.getCell(col);
         Cell ruleCell = row.getCell(col + 1); // Colonne contenant l'expression de la règle

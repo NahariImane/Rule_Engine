@@ -9,5 +9,5 @@ public interface IValidator {
 
     Map<String, ValidationResult> validate(DataObject dataToValidate) throws Exception;
 
-    DataObject loadData(String jsonDataFile);
+    DataObject convertJsonToDataObject(String jsonDataFile);
 }

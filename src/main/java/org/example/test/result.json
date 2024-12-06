@@ -1,0 +1,10 @@
+{
+  "PRENOM": {
+    "valid" : "true",
+    "message" : ""
+  },
+  "NOM" : {
+    "valid" : "true",
+    "message" : ""
+  }
+}
