@@ -5,7 +5,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.ValidationFunctions.*;
+import org.example.model.ValidationFunctions.*;
 import org.example.model.*;
 
 import java.io.FileInputStream;
@@ -106,7 +106,7 @@ public class RuleManager implements IRuleManager {
         }
 
         // Créer et retourner une instance de Field
-        return new Field(fieldName, fieldType, isObligatory);
+        return new Field(fieldName);
     }
 
     private Rule parseRule(Row row, Row headerRow, int col, Field field) {
@@ -145,7 +145,9 @@ public class RuleManager implements IRuleManager {
     /****************************************Valide***********************************/
 
     @Override
-    public Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception {
+    public Map<String, ValidationResult> validate(DataObject dataToValidate) throws Exception {
+
+        Map<String,String> fieldsToValidate = dataToValidate.getFields();
 
         DataObject input = new DataObject();
         fieldsToValidate.forEach(input::addField);
@@ -162,7 +164,7 @@ public class RuleManager implements IRuleManager {
             System.out.println("Workflow :" + ruleContainer.getWorkflow().getName());
             List<Rule> rules = ruleContainer.getRuleList();
             //complete la liste s'il y a des champs manquant avec null comme value
-            Map<String,String> fieldsToValidateComplete = this.completeMissingField(fieldsToValidate,rules);
+            this.completeMissingField(fieldsToValidate,rules);
             rules.forEach(rule -> {
                 ValidationResult result = new ValidationResult();
 
@@ -181,12 +183,10 @@ public class RuleManager implements IRuleManager {
         return results;
     }
 
-    private Map<String,String> completeMissingField(Map<String,String> fieldsToValidate,List<Rule> rules){
-        Map<String,String> result = new HashMap<>(fieldsToValidate);
+    private void completeMissingField(Map<String,String> fieldsToValidate,List<Rule> rules){
         for(Rule rule : rules){
             fieldsToValidate.putIfAbsent(rule.getField().getLabel(),null);
         }
-        return result;
     }
 
     public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {

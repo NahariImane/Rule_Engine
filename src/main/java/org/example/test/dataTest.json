@@ -1,0 +1,13 @@
+{
+  "PRENOM" :"Imane",
+  "NOM" : "NAHARI",
+  "DATE_NAISSANCE": "22/09/2001",
+  "STATUT": "majeur",
+  "TYPE_TITRE" : "PSP",
+  "SEXE": "femme",
+  "PAYS_NAISSANCE" : "france",
+  "DEPARTEMENT_NAISSANCE": "91",
+  "TAILLE": "1.63",
+  "YEUX": "marron",
+  "ORIGINE_NOM_USAGE": "Père"
+}

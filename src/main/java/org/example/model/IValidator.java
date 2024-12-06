@@ -7,5 +7,7 @@ public interface IValidator {
 
     void start(ValidatorParam param) throws IOException;
 
-    Map<String, ValidationResult> validate(Map<String, String> fieldsToValidate) throws Exception;
+    Map<String, ValidationResult> validate(DataObject dataToValidate) throws Exception;
+
+    DataObject loadData(String jsonDataFile);
 }
