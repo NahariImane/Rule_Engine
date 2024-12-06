@@ -6,11 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="a482abbf-4380-42fd-b331-6df651506b89" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/Configuration/.~lock.RulesTest.xlsx#" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/.~lock.RulesTest.xlsx#" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/Configuration/RulesTest.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/RulesTest.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/ValidationFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/ValidationFunctions.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +67,7 @@
     &quot;settings.build.tools.auto.reload&quot;: &quot;ALL&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;reference.projectsettings.compiler.javacompiler&quot;
   }
+}</component>
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
