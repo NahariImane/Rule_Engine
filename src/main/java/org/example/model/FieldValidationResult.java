@@ -1,12 +1,12 @@
 package org.example.model;
 
-public class ValidationResult {
+public class FieldValidationResult {
 
     private boolean valid;
     private String message;
 
 
-    public ValidationResult() {
+    public FieldValidationResult() {
     }
 
     public boolean isValid() {

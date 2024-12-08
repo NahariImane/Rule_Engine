@@ -17,7 +17,7 @@ public class DataObject {
     }
 
     // Récupérer la valeur d'un champ
-    public Object getFieldValue(String fieldName) {
+    public String getFieldValue(String fieldName) {
         return this.fields.get(fieldName);
     }
 
@@ -25,6 +25,7 @@ public class DataObject {
     public Map<String, String> getFields() {
         return fields;
     }
+
 
 
 }

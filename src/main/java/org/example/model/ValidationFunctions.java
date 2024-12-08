@@ -190,7 +190,7 @@ public class ValidationFunctions {
             try {
                 String[] l = list.split(",\\s*");
                 for(String s : l){
-                    if(value.equals(s)) return true;
+                    if(s.equals(value)) return true;
                 }
                 return false;
             } catch (Exception e) {
@@ -219,6 +219,41 @@ public class ValidationFunctions {
                 return value==null;
             } catch (NumberFormatException e) {
                 System.err.println("Erreur lors de l'évaluation de IsNull : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+    @FunctionalInterface
+    public interface IEqual {
+        Boolean apply(String s1, String s2);
+    }
+    public static class  Equal implements IEqual {
+        @Override
+        public Boolean apply(String s1, String s2) {
+            try {
+                if(s1 != null && s2 != null)
+                    return s2.equals(s1);
+                return false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de Equal : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+    @FunctionalInterface
+    public interface ILength {
+        Boolean apply(String value, int n);
+    }
+    public static class  LengthEqual implements ILength {
+        @Override
+        public Boolean apply(String value, int n) {
+            try {
+                if(value != null )
+                    return value.length() == n;
+                return false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de LengthEqual : " + e.getMessage());
                 return false;
             }
         }

@@ -12,17 +12,21 @@ public class ValidatorImpl  implements IValidator {
 
     private IRuleManager ruleManager;
 
+    private ValidatorTypeEnum validatorType;
+
     public ValidatorImpl() {
     }
 
+
     @Override
     public void start(ValidatorParam param) throws IOException {
+        this.validatorType = param.getType();
         this.ruleManager = RuleManager.getInstance();
         this.ruleManager.configure(param.getRuleFile());
     }
 
-    @Override
-    public DataObject convertJsonToDataObject(String jsonDataFile) {
+
+    private DataObject convertJsonToDataObject(String jsonDataFile) {
         DataObject data = new DataObject();
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -44,12 +48,51 @@ public class ValidatorImpl  implements IValidator {
         return data;
     }
 
+
+
     @Override
-    public Map<String, ValidationResult> validate(DataObject dataToValidate) throws Exception {
-        if(this.ruleManager == null) {
+    public Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception {
+
+        if (this.ruleManager == null) {
             throw new Exception("Validateur non démarré");
         }
-        return this.ruleManager.validate(dataToValidate);
+        Map<String, WorkflowValidationResult> result = this.ruleManager.validate(dataToValidate);
+
+        if(this.validatorType.equals(ValidatorTypeEnum.VIEW)) {
+            //Affichage des données
+            System.out.println("------------DATA FROM DataObject------------------");
+            for (Map.Entry<String, String> entry : dataToValidate.getFields().entrySet()) {
+                System.out.println(entry.getKey() + " : " + entry.getValue());
+            }
+
+            if(!result.isEmpty()) {
+                // Affichage des workflow identifié
+                System.out.println("------------VALIDATION------------------");
+                for (Map.Entry<String, WorkflowValidationResult> entry : result.entrySet()) {
+                    String workflow = entry.getKey();
+                    System.out.println("Workflow : " + workflow );
+                }
+
+                // Affichage des résultats de validation
+                System.out.println("------------RESULTAT------------------");
+                for (Map.Entry<String, WorkflowValidationResult> entry : result.entrySet()) {
+                    String workflow = entry.getKey();
+                    WorkflowValidationResult fieldsResult = entry.getValue();
+                    System.out.println(workflow + " : " + (fieldsResult.isValid() ? "Valide" : "Invalide"));
+
+                    for (Map.Entry<String, FieldValidationResult> e : fieldsResult.getFieldsResult().entrySet()) {
+                        String field = e.getKey();
+                        FieldValidationResult fieldResult = e.getValue();
+                        System.out.println("  " + field + " : " + (fieldResult.isValid() ? "Valide" : "Invalide"));
+                    }
+                }
+            }
+            else{
+                System.out.println("Aucun workflow identifié.");
+            }
+        }
+
+        return result;
     }
 
 

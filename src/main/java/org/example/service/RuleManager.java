@@ -22,6 +22,7 @@ public class RuleManager implements IRuleManager {
     private List<RuleContainer> ruleContainerList; // Liste de tous les containers chargés
     private String ruleFile;
 
+
     private static final RuleManager INSTANCE = new RuleManager();
 
     public static RuleManager getInstance() {
@@ -56,14 +57,14 @@ public class RuleManager implements IRuleManager {
 
                 // Lire les champs et les règles associées
                 List<Rule> rules = new ArrayList<>();
-                for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
+                for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
                     Field field = parseField(headerRow, col);
-                    if (field != null) {
-                        Rule rule = parseRule(row, col,field);
+                    if (field != null){
+                        Rule rule = parseRule(row, col, field);
                         if (rule != null) {
                             rules.add(rule);
                         }
-                    }
+                  }
                 }
 
                 // Ajouter un RuleContainer avec le workflow et ses règles
@@ -71,7 +72,7 @@ public class RuleManager implements IRuleManager {
                 ruleContainerList.add(container);
             }
         }
-//        this.printRule();
+//        this.printRules();
     }
 
     // Méthode pour parser un Workflow
@@ -82,41 +83,43 @@ public class RuleManager implements IRuleManager {
     }
 
     private Field parseField(Row headerRow, int col) {
-        // Initialiser les valeurs par défaut
-        String fieldName = headerRow.getCell(col).getStringCellValue().trim(); // Nom du champ
-        fieldName = fieldName.replace("CHAMP_","");
+        Cell fieldNameCell = headerRow.getCell(col);
+        if(fieldNameCell != null) {
+            // Initialiser les valeurs par défaut
+            String fieldName =fieldNameCell.getStringCellValue().trim(); // Nom du champ
+            fieldName = fieldName.replace("CHAMP_", "");
 
-        // Créer et retourner une instance de Field
-        return new Field(fieldName);
+            // Créer et retourner une instance de Field
+            return new Field(fieldName);
+        }
+        return null;
     }
 
     private Rule parseRule(Row row,  int col, Field field) {
         // Lecture des cellules dans la colonne pour le champ et la règle
         Cell champCell = row.getCell(col);
         Cell ruleCell = row.getCell(col + 1); // Colonne contenant l'expression de la règle
-
+        Cell desciptionCell = row.getCell(col + 2); // Colonne contenant la description de la règle
         // Vérifier que la colonne "CHAMP" est marquée "YES" et que la règle est définie
-        if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && ruleCell != null) {
-            // Récupérer l'expression  de la règle (entière)
+        if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && ruleCell != null && desciptionCell != null) {
+            // Récupérer l'expression de la règle (entière)
             String ruleExpression = ruleCell.getStringCellValue().trim();
-
-            // Retourner une instance de Rule et son expression
-            Rule rule = new Rule();
-            rule.setField(field);
-            rule.setExpression(ruleExpression);
-            return rule;
+            String ruleDescription = desciptionCell.getStringCellValue().trim();
+            // Retourner une instance de Rule et son expression et sa description
+            return new Rule(field,ruleExpression,ruleDescription);
         }
 
         return null; // Retourner null si aucune règle n'est valide
     }
 
-    private void printRule(){
+    private void printRules(){
         for (RuleContainer ruleConainer : this.ruleContainerList){
             System.out.println("workflow : " + ruleConainer.getWorkflow().getName());
             System.out.println("  condition : " + ruleConainer.getWorkflow().getCondition());
             for(Rule rule : ruleConainer.getRuleList()){
                 System.out.println("    champ : " + rule.getField().getLabel());
                 System.out.println("    regle : " + rule.getExpression());
+                System.out.println("    description : " + rule.getDescription());
             }
         }
     }
@@ -126,39 +129,50 @@ public class RuleManager implements IRuleManager {
     /****************************************Valide***********************************/
 
     @Override
-    public Map<String, ValidationResult> validate(DataObject dataToValidate) throws Exception {
-
+    public Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception {
+        //Récupère les champs à valider
         Map<String,String> fieldsToValidate = dataToValidate.getFields();
 
-        DataObject input = new DataObject();
-        fieldsToValidate.forEach(input::addField);
 
-        Map<String, ValidationResult> results = new HashMap<>();
+        Map<String, WorkflowValidationResult> results = new HashMap<>();
 
-        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
-
-        if(ruleContainers == null || ruleContainers.isEmpty()) {
-            throw new Exception("Règles non chargées.");
+        //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
+        //parmi tous les champs existant (les champs de chaque workflow)
+        for(RuleContainer ruleContainer : this.ruleContainerList){
+            completeMissingField(fieldsToValidate,ruleContainer.getRuleList());
         }
 
-        for(RuleContainer ruleContainer: ruleContainers) {
-            System.out.println("Workflow :" + ruleContainer.getWorkflow().getName());
-            List<Rule> rules = ruleContainer.getRuleList();
-            //complete la liste s'il y a des champs manquant avec null comme value
-            this.completeMissingField(fieldsToValidate,rules);
-            rules.forEach(rule -> {
-                ValidationResult result = new ValidationResult();
+        //identifié le workflow
+        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
 
-                //checher la regle correspondant à la valeur du champ et ajouter à fieldsToValidate
+        //si aucun workflow n'est identifié, retourne une map vide
+        if(ruleContainers == null || ruleContainers.isEmpty()) {
+            return results;
+            //throw new Exception("Aucun workflow identifié.");
+
+        }
+
+        //si des workflow sont identifiés
+        for(RuleContainer ruleContainer: ruleContainers) {
+            List<Rule> rules = ruleContainer.getRuleList();
+            Map<String, FieldValidationResult> workFlowResult = new HashMap<>();
+            rules.forEach(rule -> {
+                FieldValidationResult fieldResult = new FieldValidationResult();
+
+                //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
                 // nouvelle key = "value" , value = valeur trouvée sinon null
                 this.addFieldValueWithRule(rule,fieldsToValidate);
 
                 boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
-                result.setValid(isValid);
-                result.setMessage(isValid ? null : "Non valid");
-                results.put(rule.getField().getLabel(), result);
+                fieldResult.setValid(isValid);
+                fieldResult.setMessage(isValid ? null : rule.getDescription());
+                workFlowResult.put( rule.getField().getLabel(), fieldResult);
 
+                fieldsToValidate.remove("value");
             });
+            WorkflowValidationResult workflowValidationResult = new WorkflowValidationResult();
+            workflowValidationResult.setFieldsResult(workFlowResult);
+            results.put(ruleContainer.getWorkflow().getName(),workflowValidationResult);
         }
 
         return results;
@@ -207,6 +221,8 @@ public class RuleManager implements IRuleManager {
         bindings.put("BelongTo", new BelongTo());
         bindings.put("NotNull", new NotNull());
         bindings.put("IsNull", new IsNull());
+        bindings.put("Equal", new Equal());
+        bindings.put("LengthEqual", new LengthEqual());
 
 
 //        System.out.println("value : "  + fieldsToValidate.get("value"));
