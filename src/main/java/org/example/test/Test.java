@@ -19,7 +19,6 @@ public class Test {
         DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/dataTest.json"), DataObject.class);
         Map<String, WorkflowValidationResult> validationResponse = myValidator.validate(dataObject);
 
-
         // Transformation des résultats en objets ValidationOutput
         /*List<ValidationOutput> validationOutputs = new ArrayList<>();
         validationResponse.forEach((field, result) -> {

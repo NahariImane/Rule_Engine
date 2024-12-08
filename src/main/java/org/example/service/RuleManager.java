@@ -208,11 +208,11 @@ public class RuleManager implements IRuleManager {
 
         Bindings bindings = engine.createBindings();
         bindings.putAll(fieldsToValidate);
-        bindings.put("Valid_Date", new Valid_Date());
+        bindings.put("DateFormat", new DateFormat());
+        bindings.put("DateBelongFormat", new DateBelongFormat());
         bindings.put("Major_Check", new Major_Check());
         bindings.put("Minor_Check", new Minor_Check());
         bindings.put("Length_Between", new Length_Between());
-        bindings.put("IsValidName", new IsValidName());
         bindings.put("BornInFrance", new BornInFrance());
         bindings.put("IsNumber", new IsNumber());
         bindings.put("IsValidTaille", new IsValidTaille());
@@ -223,6 +223,10 @@ public class RuleManager implements IRuleManager {
         bindings.put("IsNull", new IsNull());
         bindings.put("Equal", new Equal());
         bindings.put("LengthEqual", new LengthEqual());
+        bindings.put("ContainsOnlyCharacters", new ContainsOnlyCharacters());
+        bindings.put("IsLowercase", new IsLowercase());
+        bindings.put("IsUppercase", new IsUppercase());
+        bindings.put("BeginUpperCase", new BeginUpperCase());
 
 
 //        System.out.println("value : "  + fieldsToValidate.get("value"));

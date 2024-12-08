@@ -18,7 +18,7 @@ public class API {
         return "Hello World!";
     }
 
-    @GetMapping("/start")
+    @PostMapping("/start")
     public String start()  {
         try{
             this.myValidator = new ValidatorImpl();

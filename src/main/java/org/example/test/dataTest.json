@@ -2,8 +2,8 @@
   "fields" :
   {
     "PRENOM" :"Imane",
-    "NOM" : "NAHARI",
-    "DATE_NAISSANCE": "22/09/2001",
+    "NOM" : "NAH*ARI",
+    "DATE_NAISSANCE": "09-22-2001",
     "STATUT": "majeur",
     "TYPE_TITRE" : "PSP",
     "SEXE": "femme",
