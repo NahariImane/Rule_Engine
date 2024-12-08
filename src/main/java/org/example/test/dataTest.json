@@ -1,13 +1,39 @@
 {
-  "PRENOM" :"Imane",
-  "NOM" : "NAHARI",
-  "DATE_NAISSANCE": "22/09/2001",
-  "STATUT": "majeur",
-  "TYPE_TITRE" : "PSP",
-  "SEXE": "femme",
-  "PAYS_NAISSANCE" : "france",
-  "DEPARTEMENT_NAISSANCE": "91",
-  "TAILLE": "1.63",
-  "YEUX": "marron",
-  "ORIGINE_NOM_USAGE": "Père"
+  "fields" :
+  {
+    "PRENOM" :"Imane",
+    "NOM" : "NAH*ARI",
+    "DATE_NAISSANCE": "09-22-2001",
+    "STATUT": "majeur",
+    "TYPE_TITRE" : "PSP",
+    "SEXE": "femme",
+    "TAILLE": "1.63",
+
+    "YEUX" : "marron",
+
+    "PRENOM_USUEL" : "Imane",
+    "NOM_USAGE" : "NAHARI",
+    "ORIGINE_NOM_USAGE" : "Père",
+
+    "VILLE_NAISSANCE" : "Paris",
+    "PAYS_NAISSANCE" : "france",
+    "DEPARTEMENT_NAISSANCE": "91",
+
+    "TEL_PORTABLE" : "0612131415",
+    "CODE_POSTAL":"75001",
+    "COMMUNE" : "Paris",
+    "ADRESSE" : "52 rue henri barbusse",
+
+    "PRENOM_PERE" : "papa",
+    "NOM_PERE" : "papa",
+    "NATIONALITE_PERE" :"francais",
+    "DATE_NAISSANCE_PERE" : "01/01/1970",
+    "LIEU_NAISSANCE_PERE" : "France",
+
+    "PRENOM_MERE" : "maman",
+    "NOM_MERE" : "maman",
+    "NATIONALITE_MERE" :"francais",
+    "DATE_NAISSANCE_MERE" : "01/01/1970",
+    "LIEU_NAISSANCE_MERE" : "France"
+  }
 }

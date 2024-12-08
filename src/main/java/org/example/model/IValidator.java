@@ -7,7 +7,6 @@ public interface IValidator {
 
     void start(ValidatorParam param) throws IOException;
 
-    Map<String, ValidationResult> validate(DataObject dataToValidate) throws Exception;
+    Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception;
 
-    DataObject loadData(String jsonDataFile);
 }

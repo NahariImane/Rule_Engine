@@ -2,13 +2,19 @@ package org.example.model;
 
 import org.mvel2.MVEL;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class Rule {
     private Field field;
     private String expression;
+    private String description;
 
-    public Rule() {
+    public Rule(Field field,String expression,String description) {
+        this.field = field;
+        this.expression = expression;
+        this.description = description;
+
     }
 
     public Field getField() {
@@ -25,6 +31,14 @@ public class Rule {
 
     public void setExpression(String expression) {
         this.expression = expression;
+    }
+
+    public void setDescription(String description){
+        this.description = description;
+    }
+
+    public String getDescription(){
+        return this.description;
     }
 
     @Override

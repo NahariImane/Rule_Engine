@@ -5,6 +5,7 @@ public class Field {
     private String label;
 
 
+
     public Field(String label) {
         this.label = label;
     }
@@ -12,5 +13,6 @@ public class Field {
     public String getLabel() {
         return label;
     }
+
 
 }
