@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DataObject {
-    private Map<String , Object> fields ;
+    private Map<String , String> fields ;
 
     public DataObject(){
         this.fields = new HashMap<>();
     }
 
     // Ajouter un champ dynamiquement
-    public void addField(String fieldName, Object value) {
+    public void addField(String fieldName, String value) {
         this.fields.put(fieldName, value);
     }
 
@@ -22,7 +22,7 @@ public class DataObject {
     }
 
     // Récupérer tous les champs
-    public Map<String, Object> getFields() {
+    public Map<String, String> getFields() {
         return fields;
     }
 
