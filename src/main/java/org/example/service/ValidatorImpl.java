@@ -2,6 +2,7 @@ package org.example.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.exception.RuleLoadingException;
 import org.example.model.*;
 
 import java.io.File;
@@ -19,7 +20,7 @@ public class ValidatorImpl  implements IValidator {
 
 
     @Override
-    public void start(ValidatorParam param) throws IOException {
+    public void start(ValidatorParam param) throws IOException, RuleLoadingException {
         this.validatorType = param.getType();
         this.ruleManager = RuleManager.getInstance();
         this.ruleManager.configure(param.getRuleFile());

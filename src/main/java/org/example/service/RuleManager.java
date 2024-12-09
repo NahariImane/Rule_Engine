@@ -5,8 +5,11 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.exception.RuleLoadingException;
 import org.example.model.ValidationFunctions.*;
 import org.example.model.*;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,10 +34,88 @@ public class RuleManager implements IRuleManager {
 
     /************************************Load rule***********************************/
     @Override
-    public void configure(String ruleFilePath) throws IOException {
+    public void configure(String ruleFilePath) throws IOException, RuleLoadingException {
         this.ruleFile = ruleFilePath;
+        validateExcelStructure();
         this.loadRules();
     }
+
+    private void validateExcelStructure() throws RuleLoadingException {
+        try (FileInputStream file = new FileInputStream(ruleFile);
+             Workbook workbook = new XSSFWorkbook(file)) {
+
+            // Vérifiez si le fichier contient au moins une feuille
+            if (workbook.getNumberOfSheets() == 0) {
+                throw new RuleLoadingException("Le fichier Excel ne contient aucune feuille.");
+            }
+
+            // Sélectionnez la première feuille
+            Sheet sheet = workbook.getSheetAt(0);
+            if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
+                throw new RuleLoadingException("La première feuille du fichier Excel est vide.");
+            }
+
+            // Vérifiez si l'en-tête est présent
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null || headerRow.getLastCellNum() < 5) { // Minimum 5 colonnes pour respecter la structure
+                throw new RuleLoadingException("L'en-tête du fichier Excel est manquant ou incomplet.");
+            }
+
+            // Vérifiez les colonnes obligatoires
+            if (!"Workflow name".equalsIgnoreCase(headerRow.getCell(0).getStringCellValue().trim())) {
+                throw new RuleLoadingException("La colonne 'Workflow name' est manquante ou incorrecte.");
+            }
+            if (!"Condition".equalsIgnoreCase(headerRow.getCell(1).getStringCellValue().trim())) {
+                throw new RuleLoadingException("La colonne 'Condition' est manquante ou incorrecte.");
+            }
+
+            // Valider les colonnes dynamiques (à partir de la 3e colonne)
+            for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
+                // Lire les valeurs des colonnes
+                String champ = headerRow.getCell(col) != null ? headerRow.getCell(col).getStringCellValue().trim() : null;
+                String regle = headerRow.getCell(col + 1) != null ? headerRow.getCell(col + 1).getStringCellValue().trim() : null;
+                String message = headerRow.getCell(col + 2) != null ? headerRow.getCell(col + 2).getStringCellValue().trim() : null;
+
+                // Vérifier si toutes les colonnes sont vides, ce qui signale la fin des colonnes dynamiques
+                if ((champ == null || champ.isEmpty()) &&
+                        (regle == null || regle.isEmpty()) &&
+                        (message == null || message.isEmpty())) {
+                    break; // Fin des colonnes dynamiques
+                }
+
+                // Validation de la colonne CHAMP_
+                if (champ == null || !champ.startsWith("CHAMP_")) {
+                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col) + ": attendu 'CHAMP_XXX'.");
+                }
+
+                // Validation de la colonne REGLE_
+                if (regle == null || !regle.startsWith("REGLE_")) {
+                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 1) + ": attendu 'REGLE_XXX'.");
+                }
+
+                // Validation de la colonne MESSAGE_
+                if (message == null || !message.startsWith("MESSAGE_")) {
+                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 2) + ": attendu 'MESSAGE_XXX'.");
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuleLoadingException("Erreur lors de l'ouverture du fichier Excel : " + e.getMessage(), e);
+        }
+    }
+
+
+
+    public static String convertToColumnLetter(int columnIndex) {
+            StringBuilder columnLetter = new StringBuilder();
+            columnIndex += 1; // Ajuster l'index pour commencer à 1.
+            while (columnIndex > 0) {
+                int remainder = (columnIndex - 1) % 26;
+                columnLetter.insert(0, (char) (remainder + 'A'));
+                columnIndex = (columnIndex - 1) / 26;
+            }
+            return columnLetter.toString();
+        }
 
     private void loadRules() throws IOException{
 

@@ -1,8 +1,11 @@
 package org.example.controller;
 
 
+import org.example.exception.RuleLoadingException;
 import org.example.model.*;
 import org.example.service.ValidatorImpl;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -19,7 +22,7 @@ public class API {
     }
 
     @PostMapping("/start")
-    public String start()  {
+    /*public String start()  {
         try{
             this.myValidator = new ValidatorImpl();
             ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
@@ -28,6 +31,23 @@ public class API {
         }catch (IOException e) {
             throw new RuntimeException(e);
 //            return "Start fail";
+        } catch (RuleLoadingException e) {
+            throw new RuntimeException(e);
+        }
+    }*/
+    public ResponseEntity<String> start() {
+        try {
+            this.myValidator = new ValidatorImpl();
+            ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
+            myValidator.start(param);
+            return ResponseEntity.ok("Start successful");
+        } catch (RuleLoadingException e) {
+            // Retourner une réponse HTTP 400 avec le message de l'exception
+            return ResponseEntity.badRequest().body("Erreur de chargement des règles : " + e.getMessage());
+        } catch (IOException e) {
+            // Retourner une réponse HTTP 500 avec le message de l'exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur système lors de l'initialisation : " + e.getMessage());
         }
     }
 
