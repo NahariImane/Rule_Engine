@@ -1,9 +1,5 @@
 package org.example.model;
 
-import org.mvel2.MVEL;
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public class Rule {
     private Field field;

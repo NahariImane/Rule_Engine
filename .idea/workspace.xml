@@ -5,14 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a482abbf-4380-42fd-b331-6df651506b89" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/exception/RuleLoadingException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/Configuration/.~lock.RulesTest.xlsx#" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/.~lock.RulesTest.xlsx#" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/Configuration/RulesTest.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/RulesTest.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/IRuleManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/IRuleManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/IValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/IValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/Rule.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/Rule.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationFunctions.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/ValidatorImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/ValidatorImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/test/dataTest.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/test/dataTest.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +46,9 @@
 }</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8

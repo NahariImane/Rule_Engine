@@ -294,20 +294,33 @@ public class RuleManager implements IRuleManager {
         bindings.put("Major_Check", new Major_Check());
         bindings.put("Minor_Check", new Minor_Check());
         bindings.put("Length_Between", new Length_Between());
-        bindings.put("BornInFrance", new BornInFrance());
-        bindings.put("IsNumber", new IsNumber());
-        bindings.put("IsValidTaille", new IsValidTaille());
         bindings.put("Length_Less_Than", new Length_Less_Than());
         bindings.put("Length_Greater_Than", new Length_Greater_Than());
+        bindings.put("LengthEqual", new LengthEqual());
+
+        bindings.put("BornInFrance", new BornInFrance());
         bindings.put("BelongTo", new BelongTo());
         bindings.put("NotNull", new NotNull());
         bindings.put("IsNull", new IsNull());
         bindings.put("Equal", new Equal());
-        bindings.put("LengthEqual", new LengthEqual());
+
         bindings.put("ContainsOnlyCharacters", new ContainsOnlyCharacters());
         bindings.put("IsLowercase", new IsLowercase());
         bindings.put("IsUppercase", new IsUppercase());
         bindings.put("BeginUpperCase", new BeginUpperCase());
+
+        bindings.put("IsNumber", new IsNumber());
+        bindings.put("Number_Between", new Number_Between());
+        bindings.put("Number_Greater_Than", new Number_Greater_Than());
+        bindings.put("Number_Less_Than", new Number_Less_Than());
+        bindings.put("NumberEqual", new NumberEqual());
+        bindings.put("IsFloat", new IsFloat());
+        bindings.put("Float_Between", new Float_Between());
+        bindings.put("Float_Greater_Than", new Float_Greater_Than());
+        bindings.put("Float_Less_Than", new Float_Less_Than());
+        bindings.put("FloatEqual", new FloatEqual());
+
+
 
 
 //        System.out.println("value : "  + fieldsToValidate.get("value"));

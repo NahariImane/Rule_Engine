@@ -24,15 +24,15 @@ public class ValidationFunctions {
 
     public static class Minor_Check implements Function<String, Boolean> {
         @Override
-        public Boolean apply(String birthDate) {
-            if (birthDate == null || birthDate.isEmpty()) {
+        public Boolean apply(String value) {
+            if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la date est vide ou nulle
             }
 
             for (DateTimeFormatter formatter : DATE_FORMATTERS) {
                 try {
                     // Convertir la chaîne en LocalDate avec un des formats disponibles
-                    LocalDate birth = LocalDate.parse(birthDate, formatter);
+                    LocalDate birth = LocalDate.parse(value, formatter);
                     LocalDate today = LocalDate.now();
 
                     // Calculer l'âge
@@ -46,22 +46,22 @@ public class ValidationFunctions {
             }
 
             // Si aucun format ne fonctionne, afficher une erreur et retourner faux
-            System.err.println("Erreur : Le format de la valeur n'est pas valide : " + birthDate);
+            System.err.println("Erreur : Le format de la valeur n'est pas valide : " + value);
             return false;
         }
     }
 
     public static class Major_Check implements Function<String, Boolean> {
         @Override
-        public Boolean apply(String birthDate) {
-            if (birthDate == null || birthDate.isEmpty()) {
+        public Boolean apply(String value) {
+            if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la date est vide ou nulle
             }
 
             for (DateTimeFormatter formatter : DATE_FORMATTERS) {
                 try {
                     // Convertir la chaîne en LocalDate avec un des formats disponibles
-                    LocalDate birth = LocalDate.parse(birthDate, formatter);
+                    LocalDate birth = LocalDate.parse(value, formatter);
                     LocalDate today = LocalDate.now();
 
                     // Calculer l'âge
@@ -75,7 +75,7 @@ public class ValidationFunctions {
             }
 
             // Si aucun format ne fonctionne, afficher une erreur et retourner faux
-            System.err.println("Erreur : Le format de la valeur n'est pas valide : " + birthDate);
+            System.err.println("Erreur : Le format de la valeur n'est pas valide : " + value);
             return false;
         }
     }
@@ -86,8 +86,8 @@ public class ValidationFunctions {
     }
     public static class DateFormat implements IDateFormat {
         @Override
-        public boolean apply(String date, String format) {
-            if (date == null || date.isEmpty() || format == null || format.isEmpty()) {
+        public boolean apply(String value, String format) {
+            if (value == null || value.isEmpty() || format == null || format.isEmpty()) {
                 return false; // Retourne false si la chaîne ou le format est vide ou nul
             }
 
@@ -96,7 +96,7 @@ public class ValidationFunctions {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 
                 // Tenter de parser la date avec le format
-                formatter.parse(date);
+                formatter.parse(value);
 
                 // Si aucune exception n'est levée, la date est valide
                 return true;
@@ -113,9 +113,9 @@ public class ValidationFunctions {
     }
     public static class DateBelongFormat implements IDateBelongFormat {
         @Override
-        public boolean apply(String date, String listFormat) {
+        public boolean apply(String value, String listFormat) {
 
-                if (date == null || date.isEmpty() || listFormat == null || listFormat.isEmpty()) {
+                if (value == null || value.isEmpty() || listFormat == null || listFormat.isEmpty()) {
                     return false; // La date ou le format est invalide
                 }
                 String[] formats = listFormat.split(",\\s*");
@@ -126,7 +126,7 @@ public class ValidationFunctions {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 
                         // Tenter de parser la date avec le format
-                        formatter.parse(date);
+                        formatter.parse(value);
 
                         // Si aucun exception n'est levée, la date est valide
                         return true;
@@ -168,15 +168,15 @@ public class ValidationFunctions {
     // Custom functional interface Len_Check
     @FunctionalInterface
     public interface ILength_Greater {
-        boolean apply(String value, int max);
+        boolean apply(String value, int min);
     }
 
     public static class Length_Greater_Than implements ILength_Greater {
         @Override
-        public boolean apply(String s, int n) {
+        public boolean apply(String value, int min) {
             try {
-                if(s != null && !s.isEmpty()) {
-                    return s.length() > n;
+                if(value != null && !value.isEmpty()) {
+                    return value.length() > min;
                 }
                 return false;
             } catch (Exception e) {
@@ -189,15 +189,15 @@ public class ValidationFunctions {
     // Custom functional interface Len_Check
     @FunctionalInterface
     public interface ILength_Less_Than {
-        boolean apply(String value, int min);
+        boolean apply(String value, int max);
     }
 
     public static class Length_Less_Than implements ILength_Less_Than {
         @Override
-        public boolean apply(String s, int min) {
+        public boolean apply(String value, int max) {
             try {
-                if(s != null && !s.isEmpty()) {
-                    return s.length() < min;
+                if(value != null && !value.isEmpty()) {
+                    return value.length() < max;
                 }
                 return false;
             } catch (Exception e) {
@@ -207,25 +207,43 @@ public class ValidationFunctions {
         }
     }
 
-    public static class  IsValidName implements Function<String,Boolean> {
+    @FunctionalInterface
+    public interface ILengthEqual {
+        Boolean apply(String value, int n);
+    }
+    public static class  LengthEqual implements ILengthEqual {
         @Override
-        public Boolean apply(String name) {
+        public Boolean apply(String value, int n) {
             try {
-                if(name != null && !name.isEmpty()) {
-//                    String allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz»«\"'()-/.,ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸŒàáâãäåæçèéêëìíîïñòóôõöùúûüýÿœ";
-//                    String regex = "^[" + Pattern.quote(allowedCharacters) + "]*$";
-                    String regex = "^[\\p{L}\\p{M}'\"()\\-/,À-ÖØ-öø-ÿŒœŸÝ]+$";
-
-                    // Vérifier si l'entrée correspond à la regex
-                    return name.matches(regex);
-                }
+                if(value != null && !value.isEmpty())
+                    return value.length() == n;
                 return false;
             } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de IsValidName : " + e.getMessage());
+                System.err.println("Erreur lors de l'évaluation de LengthEqual : " + e.getMessage());
                 return false;
             }
         }
     }
+
+//    public static class  IsValidName implements Function<String,Boolean> {
+//        @Override
+//        public Boolean apply(String name) {
+//            try {
+//                if(name != null && !name.isEmpty()) {
+////                    String allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz»«\"'()-/.,ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸŒàáâãäåæçèéêëìíîïñòóôõöùúûüýÿœ";
+////                    String regex = "^[" + Pattern.quote(allowedCharacters) + "]*$";
+//                    String regex = "^[\\p{L}\\p{M}'\"()\\-/,À-ÖØ-öø-ÿŒœŸÝ]+$";
+//
+//                    // Vérifier si l'entrée correspond à la regex
+//                    return name.matches(regex);
+//                }
+//                return false;
+//            } catch (Exception e) {
+//                System.err.println("Erreur lors de l'évaluation de IsValidName : " + e.getMessage());
+//                return false;
+//            }
+//        }
+//    }
 
     @FunctionalInterface
     public interface IContainsOnlyCharacters {
@@ -251,12 +269,12 @@ public class ValidationFunctions {
 
     public static class  BornInFrance implements Function<String,Boolean> {
         @Override
-        public Boolean apply(String pays) {
+        public Boolean apply(String value) {
             try {
-                if(pays != null && !pays.isEmpty()) {
+                if(value != null && !value.isEmpty()) {
                     String[] stringList = {"france", "Frane", "FRANCE"};
                     for (String s : stringList) {
-                        if (s.equals(pays)) return true;
+                        if (s.equals(value)) return true;
                     }
                 }
                 return false;
@@ -278,6 +296,108 @@ public class ValidationFunctions {
                 // Vérifie si la valeur est un entier
                 Integer.parseInt(value);
                 return true;
+            } catch (NumberFormatException e) {
+                return false; // Retourne false si ce n'est pas un entier valide
+            }
+
+        }
+    }
+
+    @FunctionalInterface
+    public interface INumber_Between{
+        boolean apply(String value, int min, int max);
+    }
+    public static class Number_Between implements INumber_Between {
+        @Override
+        public boolean apply(String value, int min, int max) {
+            // Vérification initiale des paramètres
+            if (value == null || value.isEmpty()) {
+                return false; // Retourne false si la chaîne est nulle ou vide
+            }
+
+            if (min >= max) {
+                throw new IllegalArgumentException("Le minimum doit être inférieur au maximum.");
+            }
+
+            try {
+                // Conversion de la chaîne en int
+                int v = Integer.parseInt(value);
+                // Validation si la valeur est dans la plage
+                return v >= min && v <= max;
+            } catch (NumberFormatException e) {
+                // Retourne false si la conversion échoue
+                return false;
+            }
+        }
+    }
+
+    // Custom functional interface Len_Check
+    @FunctionalInterface
+    public interface INumber_Greater_Than {
+        boolean apply(String value, int min);
+    }
+
+    public static class Number_Greater_Than implements INumber_Greater_Than {
+        @Override
+        public boolean apply(String value, int min) {
+            // Vérifier si la chaîne est nulle ou vide
+            if (value == null || value.isEmpty()) {
+                return false;
+            }
+
+            try {
+                // Convertir la chaîne en int
+                float v = Integer.parseInt(value);
+                // Vérifier si la valeur est strictement supérieure au maximum
+                return v > min;
+            } catch (NumberFormatException e) {
+                // Retourner false si la chaîne n'est pas un float valide
+                return false;
+            }
+        }
+    }
+
+    // Custom functional interface Len_Check
+    @FunctionalInterface
+    public interface INumber_Less_Than {
+        boolean apply(String value, int max);
+    }
+
+    public static class Number_Less_Than implements INumber_Less_Than {
+        @Override
+        public boolean apply(String value, int max) {
+            // Vérification initiale des paramètres
+            if (value == null || value.isEmpty()) {
+                return false; // Retourne false si la chaîne est nulle ou vide
+            }
+
+            try {
+                // Convertir la chaîne en int
+                float v = Integer.parseInt(value);
+                // Vérifier si la valeur est strictement inférieure au minimum
+                return v < max;
+            } catch (NumberFormatException e) {
+                // Retourne false si la conversion échoue
+                return false;
+            }
+        }
+    }
+
+    @FunctionalInterface
+    public interface INumberEqual {
+        boolean apply(String value, int n);
+    }
+    public static class  NumberEqual implements INumberEqual {
+        @Override
+        public boolean apply(String value, int n) {
+            if (value == null || value.isEmpty()) {
+                return false; // Retourne false si la chaîne est nulle ou vide
+            }
+
+            try {
+                // Vérifie si la valeur est un entier
+                int v = Integer.parseInt(value);
+                return v == n;
             } catch (NumberFormatException e) {
                 return false; // Retourne false si ce n'est pas un entier valide
             }
@@ -332,13 +452,13 @@ public class ValidationFunctions {
 
     // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface IFloat_Greater {
-        boolean apply(String value, float max);
+    public interface IFloat_Greater_Than {
+        boolean apply(String value, float min);
     }
 
-    public static class Float_Greater implements IFloat_Greater {
+    public static class Float_Greater_Than implements IFloat_Greater_Than {
         @Override
-        public boolean apply(String value, float max) {
+        public boolean apply(String value, float min) {
             // Vérifier si la chaîne est nulle ou vide
             if (value == null || value.isEmpty()) {
                 return false;
@@ -348,7 +468,7 @@ public class ValidationFunctions {
                 // Convertir la chaîne en Float
                 float v = Float.parseFloat(value);
                 // Vérifier si la valeur est strictement supérieure au maximum
-                return v > max;
+                return v > min;
             } catch (NumberFormatException e) {
                 // Retourner false si la chaîne n'est pas un float valide
                 return false;
@@ -359,12 +479,12 @@ public class ValidationFunctions {
     // Custom functional interface Len_Check
     @FunctionalInterface
     public interface IFloat_Less_Than {
-        boolean apply(String value, float min);
+        boolean apply(String value, float max);
     }
 
     public static class Float_Less_Than implements IFloat_Less_Than {
         @Override
-        public boolean apply(String value, float min) {
+        public boolean apply(String value, float max) {
             // Vérification initiale des paramètres
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
@@ -374,7 +494,7 @@ public class ValidationFunctions {
                 // Convertir la chaîne en Float
                 float v = Float.parseFloat(value);
                 // Vérifier si la valeur est strictement inférieure au minimum
-                return v < min;
+                return v < max;
             } catch (NumberFormatException e) {
                 // Retourne false si la conversion échoue
                 return false;
@@ -382,22 +502,25 @@ public class ValidationFunctions {
         }
     }
 
-    public static class IsValidTaille implements Function<String, Boolean> {
+    @FunctionalInterface
+    public interface IFloatEqual {
+        boolean apply(String value, float n);
+    }
+    public static class  FloatEqual implements IFloatEqual {
         @Override
-        public Boolean apply(String value) {
-            try {
-                if (value == null || value.isEmpty())  return false;
-
-                // Vérifie si la valeur est un nombre flottant compris entre 0.5 et 3.0
-                if (value.matches("^[0-9]+(\\.[0-9]+)?$")) {
-                    float taille = Float.parseFloat(value);
-                    return taille >= 0.5f && taille <= 3.0f;
-                }
-                return false;
-            } catch (NumberFormatException e) {
-                System.err.println("Erreur lors de l'évaluation de IsValidTaille : " + e.getMessage());
-                return false;
+        public boolean apply(String value, float n) {
+            if (value == null || value.isEmpty()) {
+                return false; // Retourne false si la chaîne est nulle ou vide
             }
+
+            try {
+                // Vérifie si la valeur est un float
+                float v = Float.parseFloat(value);
+                return v == n;
+            } catch (NumberFormatException e) {
+                return false; // Retourne false si ce n'est pas un entier valide
+            }
+
         }
     }
 
@@ -450,14 +573,14 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IEqual {
-        Boolean apply(String s1, String s2);
+        Boolean apply(String value, String s);
     }
     public static class  Equal implements IEqual {
         @Override
-        public Boolean apply(String s1, String s2) {
+        public Boolean apply(String value, String s) {
             try {
-                if(s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty())
-                    return s2.equals(s1);
+                if(value != null && !value.isEmpty() && s != null && !s.isEmpty())
+                    return s.equals(value);
                 return false;
             } catch (Exception e) {
                 System.err.println("Erreur lors de l'évaluation de Equal : " + e.getMessage());
@@ -465,23 +588,7 @@ public class ValidationFunctions {
             }
         }
     }
-    @FunctionalInterface
-    public interface ILengthEqual {
-        Boolean apply(String value, int n);
-    }
-    public static class  LengthEqual implements ILengthEqual {
-        @Override
-        public Boolean apply(String value, int n) {
-            try {
-                if(value != null && !value.isEmpty())
-                    return value.length() == n;
-                return false;
-            } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de LengthEqual : " + e.getMessage());
-                return false;
-            }
-        }
-    }
+
 
 
 
@@ -526,6 +633,7 @@ public class ValidationFunctions {
             }
         }
     }
+
 
     public static class  BeginUpperCase implements Function<String,Boolean> {
         @Override

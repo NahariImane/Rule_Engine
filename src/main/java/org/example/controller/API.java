@@ -22,20 +22,7 @@ public class API {
     }
 
     @PostMapping("/start")
-    /*public String start()  {
-        try{
-            this.myValidator = new ValidatorImpl();
-            ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
-            myValidator.start(param);
-            return "Start successful";
-        }catch (IOException e) {
-            throw new RuntimeException(e);
-//            return "Start fail";
-        } catch (RuleLoadingException e) {
-            throw new RuntimeException(e);
-        }
-    }*/
-    public ResponseEntity<String> start() {
+    public ResponseEntity<String> testStart() {
         try {
             this.myValidator = new ValidatorImpl();
             ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
@@ -52,7 +39,7 @@ public class API {
     }
 
     @PostMapping("/validate")
-    public Map<String, WorkflowValidationResult> validate(@RequestBody DataObject inputJson) {
+    public Map<String, WorkflowValidationResult> testValidate(@RequestBody DataObject inputJson) {
         try {
             return myValidator.validate(inputJson);
         } catch (Exception e) {
