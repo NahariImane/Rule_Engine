@@ -25,7 +25,7 @@ public class API {
     public ResponseEntity<String> testStart() {
         try {
             this.myValidator = new ValidatorImpl();
-//            ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
+//            ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V1.xlsx", ValidatorTypeEnum.DATA);
             ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V2.xlsx", ValidatorTypeEnum.DATA);
             myValidator.start(param);
             return ResponseEntity.ok("Start successful");
@@ -39,8 +39,17 @@ public class API {
         }
     }
 
+//    @PostMapping("/validate")
+//    public Map<String, WorkflowValidationResult> testValidate(@RequestBody DataObject inputJson) {
+//        try {
+//            return myValidator.validate(inputJson);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
     @PostMapping("/validate")
-    public Map<String, WorkflowValidationResult> testValidate(@RequestBody DataObject inputJson) {
+    public WorkflowValidationResult testValidate(@RequestBody DataObject inputJson) {
         try {
             return myValidator.validate(inputJson);
         } catch (Exception e) {

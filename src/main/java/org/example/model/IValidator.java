@@ -9,6 +9,7 @@ public interface IValidator {
 
     void start(ValidatorParam param) throws IOException, RuleLoadingException;
 
-    Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception;
+//    Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception;
 
+    WorkflowValidationResult validate(DataObject dataToValidate) throws Exception;
 }

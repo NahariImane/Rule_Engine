@@ -12,24 +12,15 @@ public class Test {
     public static void main(String[] args) throws Exception {
 
         IValidator myValidator = new ValidatorImpl();
-//        ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.VIEW);
+//        ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V1.xlsx", ValidatorTypeEnum.VIEW);
         ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V2.xlsx", ValidatorTypeEnum.VIEW);
         myValidator.start(param);
 
         ObjectMapper objectMapper = new ObjectMapper();
         DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/dataTest.json"), DataObject.class);
-        Map<String, WorkflowValidationResult> validationResponse = myValidator.validate(dataObject);
+//        Map<String, WorkflowValidationResult> validationResponse = myValidator.validate(dataObject);
+        WorkflowValidationResult validationResponse = myValidator.validate(dataObject);
 
-        // Transformation des résultats en objets ValidationOutput
-        /*List<ValidationOutput> validationOutputs = new ArrayList<>();
-        validationResponse.forEach((field, result) -> {
-            String ruleViolated = result.isValid() ? "" : "Exemple de règle non respectée"; // À remplacer par la vraie règle
-            validationOutputs.add(new ValidationOutput(field, result.isValid(), result.getMessage(), ruleViolated));
-        });
-
-        // Affichage des résultats
-        System.out.println("------------RESULTAT------------------");
-        validationOutputs.forEach(System.out::println);*/
 
     }
 }

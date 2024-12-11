@@ -282,56 +282,112 @@ private void loadRules() throws IOException{
 
 
 
-    /****************************************Valide***********************************/
+    /****************************************Validate***********************************/
+
+//    @Override
+//    public Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception {
+//        //Récupère les champs à valider
+//        Map<String,String> fieldsToValidate = dataToValidate.getFields();
+//
+//
+//        Map<String, WorkflowValidationResult> results = new HashMap<>();
+//
+//        //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
+//        //parmi tous les champs existant (les champs de chaque workflow)
+//        for(RuleContainer ruleContainer : this.ruleContainerList){
+//            completeMissingField(fieldsToValidate,ruleContainer.getRuleList());
+//        }
+//
+//        //identifié le workflow
+//        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
+//
+//        //si aucun workflow n'est identifié, retourne une map vide
+//        if(ruleContainers == null || ruleContainers.isEmpty()) {
+//            return results;
+//            //throw new Exception("Aucun workflow identifié.");
+//        }
+//
+//        //si des workflow sont identifiés
+//        for(RuleContainer ruleContainer: ruleContainers) {
+//            List<Rule> rules = ruleContainer.getRuleList();
+//            Map<String, FieldValidationResult> workFlowResult = new HashMap<>();
+//            rules.forEach(rule -> {
+//                FieldValidationResult fieldResult = new FieldValidationResult();
+//
+//                //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
+//                // nouvelle key = "value" , value = valeur trouvée sinon null
+//                this.addFieldValueWithRule(rule,fieldsToValidate);
+//
+//                boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
+//                fieldResult.setValid(isValid);
+//                fieldResult.setMessage(isValid ? null : rule.getDescription());
+//                workFlowResult.put( rule.getField().getLabel(), fieldResult);
+//
+//                fieldsToValidate.remove("value");
+//            });
+//            WorkflowValidationResult workflowValidationResult = new WorkflowValidationResult();
+//            workflowValidationResult.setFieldsResult(workFlowResult);
+//            results.put(ruleContainer.getWorkflow().getName(),workflowValidationResult);
+//        }
+//
+//        return results;
+//    }
 
     @Override
-    public Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception {
+    public WorkflowValidationResult validate(DataObject dataToValidate) throws Exception {
         //Récupère les champs à valider
         Map<String,String> fieldsToValidate = dataToValidate.getFields();
-
-
-        Map<String, WorkflowValidationResult> results = new HashMap<>();
 
         //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
         //parmi tous les champs existant (les champs de chaque workflow)
         for(RuleContainer ruleContainer : this.ruleContainerList){
             completeMissingField(fieldsToValidate,ruleContainer.getRuleList());
         }
-
         //identifié le workflow
         List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
 
         //si aucun workflow n'est identifié, retourne une map vide
         if(ruleContainers == null || ruleContainers.isEmpty()) {
-            return results;
+            return null;
             //throw new Exception("Aucun workflow identifié.");
-
         }
+        else{
+            //si des workflow sont identifiés
+            WorkflowValidationResult result = new WorkflowValidationResult();
 
-        //si des workflow sont identifiés
-        for(RuleContainer ruleContainer: ruleContainers) {
-            List<Rule> rules = ruleContainer.getRuleList();
-            Map<String, FieldValidationResult> workFlowResult = new HashMap<>();
-            rules.forEach(rule -> {
-                FieldValidationResult fieldResult = new FieldValidationResult();
+            for(RuleContainer ruleContainer: ruleContainers) {
+                List<Rule> rules = ruleContainer.getRuleList();
+                Map<String, FieldValidationResult> fieldsResult = new HashMap<>();
+                Map<String, FieldValidationResult> fieldsInvalidResult = new HashMap<>();
+                rules.forEach(rule -> {
+                    FieldValidationResult fieldResult = new FieldValidationResult();
 
-                //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
-                // nouvelle key = "value" , value = valeur trouvée sinon null
-                this.addFieldValueWithRule(rule,fieldsToValidate);
+                    //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
+                    // nouvelle key = "value" , value = valeur trouvée sinon null
+                    this.addFieldValueWithRule(rule,fieldsToValidate);
 
-                boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
-                fieldResult.setValid(isValid);
-                fieldResult.setMessage(isValid ? null : rule.getDescription());
-                workFlowResult.put( rule.getField().getLabel(), fieldResult);
+                    boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
+                    fieldResult.setValid(isValid);
+                    fieldResult.setMessage(isValid ? null : rule.getDescription());
+                    fieldsResult.put( rule.getField().getLabel(), fieldResult);
 
-                fieldsToValidate.remove("value");
-            });
-            WorkflowValidationResult workflowValidationResult = new WorkflowValidationResult();
-            workflowValidationResult.setFieldsResult(workFlowResult);
-            results.put(ruleContainer.getWorkflow().getName(),workflowValidationResult);
+                    if(!isValid)
+                        fieldsInvalidResult.put(rule.getField() .getLabel(),fieldResult);
+
+                    fieldsToValidate.remove("value");
+                });
+
+                if(result.isValid()){
+                    return result;
+                }
+                else{
+                    result.setWorkflowName(ruleContainer.getWorkflow().getName());
+                    result.setFieldsResult(fieldsResult);
+                    result.setFieldsInvalidResult(fieldsInvalidResult);
+                }
+            }
+            return result;
         }
-
-        return results;
     }
 
     private void completeMissingField(Map<String,String> fieldsToValidate,List<Rule> rules){

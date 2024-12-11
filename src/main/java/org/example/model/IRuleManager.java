@@ -8,8 +8,10 @@ import java.util.Map;
 
 public interface IRuleManager {
 
-    Map<String, WorkflowValidationResult> validate(DataObject fieldsToValidate) throws Exception;
+//    Map<String, WorkflowValidationResult> validate(DataObject fieldsToValidate) throws Exception;
 
     void configure(String ruleFilePath) throws IOException, RuleLoadingException;
+
+    WorkflowValidationResult validate(DataObject dataToValidate) throws Exception;
 
 }
