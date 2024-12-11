@@ -7,6 +7,7 @@ public class WorkflowValidationResult {
     private Map<String,FieldValidationResult> fieldsValidationResult;
 
 
+
     public void setFieldsResult(Map<String, FieldValidationResult> fieldsValidationResult) {
         this.fieldsValidationResult = fieldsValidationResult;
         boolean isValid = true;

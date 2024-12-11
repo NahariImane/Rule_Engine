@@ -36,7 +36,7 @@ public class RuleManager implements IRuleManager {
     @Override
     public void configure(String ruleFilePath) throws IOException, RuleLoadingException {
         this.ruleFile = ruleFilePath;
-        validateExcelStructure();
+//        validateExcelStructure();
         this.loadRules();
     }
 
@@ -117,44 +117,120 @@ public class RuleManager implements IRuleManager {
             return columnLetter.toString();
         }
 
-    private void loadRules() throws IOException{
+//    private void loadRules() throws IOException{
+//
+//        if(ruleContainerList == null) {
+//            ruleContainerList = new ArrayList<>();
+//        }
+//
+//        try (FileInputStream file = new FileInputStream(ruleFile);
+//             Workbook workbook = new XSSFWorkbook(file)) {
+//
+//            // Lecture de la première feuille du fichier Excel
+//            Sheet sheet = workbook.getSheetAt(0);
+//            Row headerRow = sheet.getRow(0);
+//
+//            for (Row row : sheet) {
+//                if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
+//
+//                // Lire le workflow et sa condition
+//                Workflow workflow = parseWorkflow(row);
+//
+//                // Lire les champs et les règles associées
+//                List<Rule> rules = new ArrayList<>();
+//                for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
+//                    Field field = parseField(headerRow, col);
+//                    if (field != null){
+//                        Rule rule = parseRule(row, col, field);
+//                        if (rule != null) {
+//                            rules.add(rule);
+//                        }
+//                  }
+//                }
+//
+//                // Ajouter un RuleContainer avec le workflow et ses règles
+//                RuleContainer container = new RuleContainer(workflow, rules);
+//                ruleContainerList.add(container);
+//            }
+//        }
+////        this.printRules();
+//    }
+//
+//    // Méthode pour parser un Workflow
+//    private Workflow parseWorkflow(Row row) {
+//        String workflowName = row.getCell(0).getStringCellValue().trim(); // Colonne Workflow Name
+//        String condition = row.getCell(1).getStringCellValue().trim();    // Colonne Condition
+//        return new Workflow(workflowName, condition);
+//    }
+//
+//    private Field parseField(Row headerRow, int col) {
+//        Cell fieldNameCell = headerRow.getCell(col);
+//        if(fieldNameCell != null) {
+//            // Initialiser les valeurs par défaut
+//            String fieldName =fieldNameCell.getStringCellValue().trim(); // Nom du champ
+//            fieldName = fieldName.replace("CHAMP_", "");
+//
+//            // Créer et retourner une instance de Field
+//            return new Field(fieldName);
+//        }
+//        return null;
+//    }
+//
+//    private Rule parseRule(Row row,  int col, Field field) {
+//        // Lecture des cellules dans la colonne pour le champ et la règle
+//        Cell champCell = row.getCell(col);
+//        Cell ruleCell = row.getCell(col + 1); // Colonne contenant l'expression de la règle
+//        Cell desciptionCell = row.getCell(col + 2); // Colonne contenant la description de la règle
+//        // Vérifier que la colonne "CHAMP" est marquée "YES" et que la règle est définie
+//        if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && ruleCell != null && desciptionCell != null) {
+//            // Récupérer l'expression de la règle (entière)
+//            String ruleExpression = ruleCell.getStringCellValue().trim();
+//            String ruleDescription = desciptionCell.getStringCellValue().trim();
+//            // Retourner une instance de Rule et son expression et sa description
+//            return new Rule(field,ruleExpression,ruleDescription);
+//        }
+//
+//        return null; // Retourner null si aucune règle n'est valide
+//    }
 
-        if(ruleContainerList == null) {
-            ruleContainerList = new ArrayList<>();
-        }
+private void loadRules() throws IOException{
 
-        try (FileInputStream file = new FileInputStream(ruleFile);
-             Workbook workbook = new XSSFWorkbook(file)) {
-
-            // Lecture de la première feuille du fichier Excel
-            Sheet sheet = workbook.getSheetAt(0);
-            Row headerRow = sheet.getRow(0);
-
-            for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
-
-                // Lire le workflow et sa condition
-                Workflow workflow = parseWorkflow(row);
-
-                // Lire les champs et les règles associées
-                List<Rule> rules = new ArrayList<>();
-                for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
-                    Field field = parseField(headerRow, col);
-                    if (field != null){
-                        Rule rule = parseRule(row, col, field);
-                        if (rule != null) {
-                            rules.add(rule);
-                        }
-                  }
-                }
-
-                // Ajouter un RuleContainer avec le workflow et ses règles
-                RuleContainer container = new RuleContainer(workflow, rules);
-                ruleContainerList.add(container);
-            }
-        }
-//        this.printRules();
+    if(ruleContainerList == null) {
+        ruleContainerList = new ArrayList<>();
     }
+
+    try (FileInputStream file = new FileInputStream(ruleFile);
+         Workbook workbook = new XSSFWorkbook(file)) {
+
+        // Lecture de la première feuille du fichier Excel
+        Sheet sheet = workbook.getSheetAt(0);
+        Row headerRow = sheet.getRow(0);
+
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
+
+            // Lire le workflow et sa condition
+            Workflow workflow = parseWorkflow(row);
+
+            // Lire les champs et les règles associées
+            List<Rule> rules = new ArrayList<>();
+            for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
+                Field field = parseField(headerRow, col);
+                if (field != null){
+                    Rule rule = parseRule(row, col, field);
+                    if (rule != null) {
+                        rules.add(rule);
+                    }
+                }
+            }
+
+            // Ajouter un RuleContainer avec le workflow et ses règles
+            RuleContainer container = new RuleContainer(workflow, rules);
+            ruleContainerList.add(container);
+        }
+    }
+//        this.printRules();
+}
 
     // Méthode pour parser un Workflow
     private Workflow parseWorkflow(Row row) {
@@ -168,7 +244,7 @@ public class RuleManager implements IRuleManager {
         if(fieldNameCell != null) {
             // Initialiser les valeurs par défaut
             String fieldName =fieldNameCell.getStringCellValue().trim(); // Nom du champ
-            fieldName = fieldName.replace("CHAMP_", "");
+            fieldName = fieldName.replace("REGLE_", "");
 
             // Créer et retourner une instance de Field
             return new Field(fieldName);
@@ -178,11 +254,10 @@ public class RuleManager implements IRuleManager {
 
     private Rule parseRule(Row row,  int col, Field field) {
         // Lecture des cellules dans la colonne pour le champ et la règle
-        Cell champCell = row.getCell(col);
-        Cell ruleCell = row.getCell(col + 1); // Colonne contenant l'expression de la règle
-        Cell desciptionCell = row.getCell(col + 2); // Colonne contenant la description de la règle
-        // Vérifier que la colonne "CHAMP" est marquée "YES" et que la règle est définie
-        if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && ruleCell != null && desciptionCell != null) {
+        Cell ruleCell = row.getCell(col ); // Colonne contenant l'expression de la règle
+        Cell desciptionCell = row.getCell(col + 1); // Colonne contenant la description de la règle
+
+        if (ruleCell != null && desciptionCell != null) {
             // Récupérer l'expression de la règle (entière)
             String ruleExpression = ruleCell.getStringCellValue().trim();
             String ruleDescription = desciptionCell.getStringCellValue().trim();
@@ -320,6 +395,7 @@ public class RuleManager implements IRuleManager {
         bindings.put("Float_Less_Than", new Float_Less_Than());
         bindings.put("FloatEqual", new FloatEqual());
 
+        bindings.put("valid", true);
 
 
 

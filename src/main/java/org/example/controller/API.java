@@ -25,7 +25,8 @@ public class API {
     public ResponseEntity<String> testStart() {
         try {
             this.myValidator = new ValidatorImpl();
-            ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
+//            ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.DATA);
+            ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V2.xlsx", ValidatorTypeEnum.DATA);
             myValidator.start(param);
             return ResponseEntity.ok("Start successful");
         } catch (RuleLoadingException e) {

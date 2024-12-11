@@ -12,7 +12,8 @@ public class Test {
     public static void main(String[] args) throws Exception {
 
         IValidator myValidator = new ValidatorImpl();
-        ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.VIEW);
+//        ValidatorParam param = new ValidatorParam("src/main/Configuration/RulesTest.xlsx", ValidatorTypeEnum.VIEW);
+        ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V2.xlsx", ValidatorTypeEnum.VIEW);
         myValidator.start(param);
 
         ObjectMapper objectMapper = new ObjectMapper();
