@@ -1,11 +1,9 @@
 package org.example.service;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.exception.RuleLoadingException;
+import org.example.exception.RuleValidationException;
 import org.example.model.ValidationFunctions.*;
 import org.example.model.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -36,7 +34,7 @@ public class RuleManager implements IRuleManager {
     @Override
     public void configure(String ruleFilePath) throws IOException, RuleLoadingException {
         this.ruleFile = ruleFilePath;
-//        validateExcelStructure();
+        validateExcelStructure();
         this.loadRules();
     }
 
@@ -57,7 +55,7 @@ public class RuleManager implements IRuleManager {
 
             // Vérifiez si l'en-tête est présent
             Row headerRow = sheet.getRow(0);
-            if (headerRow == null || headerRow.getLastCellNum() < 5) { // Minimum 5 colonnes pour respecter la structure
+            if (headerRow == null || headerRow.getLastCellNum() < 4) { // Minimum 4 colonnes pour respecter la structure
                 throw new RuleLoadingException("L'en-tête du fichier Excel est manquant ou incomplet.");
             }
 
@@ -70,32 +68,65 @@ public class RuleManager implements IRuleManager {
             }
 
             // Valider les colonnes dynamiques (à partir de la 3e colonne)
-            for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
+            for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
                 // Lire les valeurs des colonnes
-                String champ = headerRow.getCell(col) != null ? headerRow.getCell(col).getStringCellValue().trim() : null;
-                String regle = headerRow.getCell(col + 1) != null ? headerRow.getCell(col + 1).getStringCellValue().trim() : null;
-                String message = headerRow.getCell(col + 2) != null ? headerRow.getCell(col + 2).getStringCellValue().trim() : null;
+                String regle_header = headerRow.getCell(col) != null ? headerRow.getCell(col ).getStringCellValue().trim() : null;
+                String message_header = headerRow.getCell(col + 1) != null ? headerRow.getCell(col + 1).getStringCellValue().trim() : null;
 
                 // Vérifier si toutes les colonnes sont vides, ce qui signale la fin des colonnes dynamiques
-                if ((champ == null || champ.isEmpty()) &&
-                        (regle == null || regle.isEmpty()) &&
-                        (message == null || message.isEmpty())) {
+                if ((regle_header == null || regle_header.isEmpty()) &&
+                        (message_header == null || message_header.isEmpty())) {
                     break; // Fin des colonnes dynamiques
                 }
 
-                // Validation de la colonne CHAMP_
-                if (champ == null || !champ.startsWith("CHAMP_")) {
-                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col) + ": attendu 'CHAMP_XXX'.");
-                }
-
                 // Validation de la colonne REGLE_
-                if (regle == null || !regle.startsWith("REGLE_")) {
-                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 1) + ": attendu 'REGLE_XXX'.");
+                if (regle_header == null || !regle_header.startsWith("REGLE_")) {
+                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col ) + ": attendu 'REGLE_XXX'.");
                 }
 
                 // Validation de la colonne MESSAGE_
-                if (message == null || !message.startsWith("MESSAGE_")) {
-                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 2) + ": attendu 'MESSAGE_XXX'.");
+                if (message_header == null || !message_header.startsWith("MESSAGE_")) {
+                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 1) + ": attendu 'MESSAGE_XXX'.");
+                }
+            }
+            // Parcourir les lignes du fichier Excel
+            for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+
+                // Ignorer les lignes nulles ou vides
+                if (row == null || isRowEmpty(row)) {
+                    continue; // next line
+                }
+
+                // Valider les valeurs des colonnes Workflow name et Condition
+                String workflowName = getCellValue(row.getCell(0));
+                String condition = getCellValue(row.getCell(1));
+
+                if (workflowName == null || workflowName.isEmpty()) {
+                    throw new RuleLoadingException("La colonne 'Workflow name' est vide à la ligne " + (rowIndex + 1));
+                }
+
+                if (condition == null || condition.isEmpty()) {
+                    throw new RuleLoadingException("La colonne 'Condition' est vide à la ligne " + (rowIndex + 1));
+                }
+
+                // Parcourir les colonnes dynamiques (REGLE_ et MESSAGE_)
+                for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
+                    String regleHeader = getCellValue(headerRow.getCell(col));
+                    String messageHeader = getCellValue(headerRow.getCell(col + 1));
+
+                    if (regleHeader != null && regleHeader.startsWith("REGLE_")) {
+                        String regleValue = getCellValue(row.getCell(col));
+                        String messageValue = getCellValue(row.getCell(col + 1));
+
+                        // Validation des valeurs des colonnes dynamiques
+                        if ((regleValue == null || regleValue.isEmpty())) {
+                            throw new RuleLoadingException("La colonne '" + regleHeader + "' est vide  à la ligne " + (rowIndex + 1));
+                        }
+                        if ((messageValue == null || messageValue.isEmpty()) ) {
+                            throw new RuleLoadingException("La colonne '" + messageHeader + "' est vide à la ligne " + (rowIndex + 1));
+                        }
+                    }
                 }
             }
 
@@ -104,6 +135,21 @@ public class RuleManager implements IRuleManager {
         }
     }
 
+    // Méthode pour vérifier si une ligne est vide
+    private boolean isRowEmpty(Row row) {
+        for (int i = 0; i < row.getLastCellNum(); i++) {
+            Cell cell = row.getCell(i);
+            if (cell != null && cell.getCellType() != CellType.BLANK && cell.getStringCellValue() != null && !cell.getStringCellValue().trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    // Méthode pour obtenir la valeur d'une cellule
+    private String getCellValue(Cell cell) {
+        if (cell == null) return null;
+        return cell.getCellType() == CellType.STRING ? cell.getStringCellValue().trim() : null;
+    }
 
 
     public static String convertToColumnLetter(int columnIndex) {
@@ -334,59 +380,65 @@ private void loadRules() throws IOException{
 //    }
 
     @Override
-    public WorkflowValidationResult validate(DataObject dataToValidate) throws Exception {
-        //Récupère les champs à valider
-        Map<String,String> fieldsToValidate = dataToValidate.getFields();
+    public WorkflowValidationResult validate(DataObject dataToValidate) throws RuleValidationException {
 
-        //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
-        //parmi tous les champs existant (les champs de chaque workflow)
-        for(RuleContainer ruleContainer : this.ruleContainerList){
-            completeMissingField(fieldsToValidate,ruleContainer.getRuleList());
-        }
-        //identifié le workflow
-        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
+        try { //Récupère les champs à valider
+            Map<String, String> fieldsToValidate = dataToValidate.getFields();
 
-        //si aucun workflow n'est identifié, retourne une map vide
-        if(ruleContainers == null || ruleContainers.isEmpty()) {
-            return null;
-            //throw new Exception("Aucun workflow identifié.");
-        }
-        else{
-            //si des workflow sont identifiés
-            WorkflowValidationResult result = new WorkflowValidationResult();
-
-            for(RuleContainer ruleContainer: ruleContainers) {
-                List<Rule> rules = ruleContainer.getRuleList();
-                Map<String, FieldValidationResult> fieldsResult = new HashMap<>();
-                Map<String, FieldValidationResult> fieldsInvalidResult = new HashMap<>();
-                rules.forEach(rule -> {
-                    FieldValidationResult fieldResult = new FieldValidationResult();
-
-                    //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
-                    // nouvelle key = "value" , value = valeur trouvée sinon null
-                    this.addFieldValueWithRule(rule,fieldsToValidate);
-
-                    boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
-                    fieldResult.setValid(isValid);
-                    fieldResult.setMessage(isValid ? null : rule.getDescription());
-                    fieldsResult.put( rule.getField().getLabel(), fieldResult);
-
-                    if(!isValid)
-                        fieldsInvalidResult.put(rule.getField() .getLabel(),fieldResult);
-
-                    fieldsToValidate.remove("value");
-                });
-
-                if(result.isValid()){
-                    return result;
-                }
-                else{
-                    result.setWorkflowName(ruleContainer.getWorkflow().getName());
-                    result.setFieldsResult(fieldsResult);
-                    result.setFieldsInvalidResult(fieldsInvalidResult);
-                }
+            //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
+            //parmi tous les champs existant (les champs de chaque workflow)
+            for (RuleContainer ruleContainer : this.ruleContainerList) {
+                completeMissingField(fieldsToValidate, ruleContainer.getRuleList());
             }
-            return result;
+            //identifié le workflow
+            List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
+
+            //si aucun workflow n'est identifié, retourne une map vide
+            if (ruleContainers == null || ruleContainers.isEmpty()) {
+                // return null;
+                throw new RuleValidationException("Aucun workflow identifié pour les données fournies.");
+            } else {
+                //si des workflow sont identifiés
+                WorkflowValidationResult result = new WorkflowValidationResult();
+
+                for (RuleContainer ruleContainer : ruleContainers) {
+                    List<Rule> rules = ruleContainer.getRuleList();
+                    Map<String, FieldValidationResult> fieldsResult = new HashMap<>();
+                    Map<String, FieldValidationResult> fieldsInvalidResult = new HashMap<>();
+                    rules.forEach(rule -> {
+                        FieldValidationResult fieldResult = new FieldValidationResult();
+
+                        //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
+                        // nouvelle key = "value" , value = valeur trouvée sinon null
+                        this.addFieldValueWithRule(rule, fieldsToValidate);
+
+                        boolean isValid = this.evaluateExpression(rule.getExpression(), fieldsToValidate);
+                        fieldResult.setValid(isValid);
+                        fieldResult.setMessage(isValid ? null : rule.getDescription());
+                        fieldsResult.put(rule.getField().getLabel(), fieldResult);
+
+                        if (!isValid)
+                            fieldsInvalidResult.put(rule.getField().getLabel(), fieldResult);
+
+                        fieldsToValidate.remove("value");
+                    });
+
+                    if (result.isValid()) {
+                        return result;
+                    } else {
+                        result.setWorkflowName(ruleContainer.getWorkflow().getName());
+                        result.setFieldsResult(fieldsResult);
+                        result.setFieldsInvalidResult(fieldsInvalidResult);
+                    }
+                }
+                return result;
+            }
+        }catch (RuleValidationException e) {
+            // Gérer les erreurs spécifiques de validation
+            throw e;
+        } catch (Exception e) {
+            // Gérer toute autre exception non prévue
+            throw new RuleValidationException("Une erreur inattendue est survenue pendant la validation : " + e.getMessage(), e);
         }
     }
 
