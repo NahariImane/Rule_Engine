@@ -104,7 +104,7 @@ public class ValidatorImpl  implements IValidator {
         }
         WorkflowValidationResult result = this.ruleManager.validate(dataToValidate);
 
-        if(this.validatorType.equals(ValidatorTypeEnum.VIEW)) {
+
             //Affichage des données
             System.out.println("------------DATA FROM DataObject------------------");
             for (Map.Entry<String, String> entry : dataToValidate.getFields().entrySet()) {
@@ -114,33 +114,34 @@ public class ValidatorImpl  implements IValidator {
             if(result != null) {
                 // Affichage des workflow identifié
                 System.out.println("------------VALIDATION------------------");
+                    for(String s : result.getWorkflowNames()){
+                        System.out.println("Workflow : " + s );
+                    }
 
-                    System.out.println("Workflow : " + result.getWorkflowName() );
 
+            // Affichage des résultats de validation
+            System.out.println("------------RESULTAT------------------");
+            System.out.println("Résultat global : " + (result.isValid() ? "Valide" : "Invalide"));
 
-                // Affichage des résultats de validation
-                System.out.println("------------RESULTAT------------------");
-                System.out.println(result.getWorkflowName() + " : " + (result.isValid() ? "Valide" : "Invalide"));
+            for (Map.Entry<String, FieldValidationResult> entry : result.getFieldsResult().entrySet()) {
+                String field = entry.getKey();
+                FieldValidationResult fieldsResult = entry.getValue();
+                System.out.println(field + " : " + (fieldsResult.isValid() ? "Valide" : "Invalide"));
+            }
 
-                for (Map.Entry<String, FieldValidationResult> entry : result.getFieldsResult().entrySet()) {
-                    String field = entry.getKey();
-                    FieldValidationResult fieldsResult = entry.getValue();
-                    System.out.println(field + " : " + (fieldsResult.isValid() ? "Valide" : "Invalide"));
-                }
-
-                // Affichage des résultats de validation invalide
-//                System.out.println("------------RESULTAT INVALIDE------------------");
+            // Affichage des résultats de validation invalide
+//            System.out.println("------------RESULTAT INVALIDE------------------");
 //
-//                for (Map.Entry<String, FieldValidationResult> entry : result.getFieldsInvalidResult().entrySet()) {
-//                    String field = entry.getKey();
-//                    FieldValidationResult fieldsResult = entry.getValue();
-//                    System.out.println(field + " : " + (fieldsResult.isValid() ? "Valide" : "Invalide"));
-//                }
-            }
-            else{
-                System.out.println("Aucun workflow identifié.");
-            }
+//            for (Map.Entry<String, FieldValidationResult> entry : result.getFieldsInvalidResult().entrySet()) {
+//                String field = entry.getKey();
+//                FieldValidationResult fieldsResult = entry.getValue();
+//                System.out.println(field + " : " + (fieldsResult.isValid() ? "Valide" : "Invalide"));
+//            }
         }
+        else{
+            System.out.println("Aucun workflow identifié.");
+        }
+
 
         return result;
     }

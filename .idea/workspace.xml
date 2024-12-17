@@ -5,11 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a482abbf-4380-42fd-b331-6df651506b89" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/exception/RuleValidationException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/Configuration/.~lock.Rules_V2.xlsx#" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/.~lock.Rules_V2.xlsx#" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/Configuration/Rules_V2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/Rules_V2.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/WorkflowValidationResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/WorkflowValidationResult.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/ValidatorImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/ValidatorImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

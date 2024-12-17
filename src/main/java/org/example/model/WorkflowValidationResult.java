@@ -1,16 +1,20 @@
 package org.example.model;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class WorkflowValidationResult {
-    private String workflowName;
+    private ArrayList<String> workflowNames;
     private boolean isValid;
     private Map<String,FieldValidationResult> fieldsValidationResult;
     private Map<String,FieldValidationResult> fieldsInvalidResult;
 
 
-    public void setWorkflowName(String workflowName){
-        this.workflowName = workflowName;
+    public void addWorkflowName(String workflowName){
+        if(workflowNames == null){
+            workflowNames = new ArrayList<>();
+        }
+        workflowNames.add(workflowName);
     }
 
     public void setFieldsResult(Map<String, FieldValidationResult> fieldsValidationResult) {
@@ -26,8 +30,8 @@ public class WorkflowValidationResult {
         this.fieldsInvalidResult = fieldsInvalidResult;
     }
 
-    public String getWorkflowName(){
-        return this.workflowName;
+    public ArrayList<String> getWorkflowNames(){
+        return this.workflowNames;
     }
 
     public Map<String,FieldValidationResult> getFieldsResult(){

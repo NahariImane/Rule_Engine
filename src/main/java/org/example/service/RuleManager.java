@@ -423,13 +423,11 @@ private void loadRules() throws IOException{
                         fieldsToValidate.remove("value");
                     });
 
-                    if (result.isValid()) {
-                        return result;
-                    } else {
-                        result.setWorkflowName(ruleContainer.getWorkflow().getName());
-                        result.setFieldsResult(fieldsResult);
-                        result.setFieldsInvalidResult(fieldsInvalidResult);
-                    }
+
+                    result.addWorkflowName(ruleContainer.getWorkflow().getName());
+                    result.setFieldsResult(this.union(result.getFieldsResult(),fieldsResult));
+                    result.setFieldsInvalidResult(this.union(result.getFieldsInvalidResult(),fieldsInvalidResult));
+
                 }
                 return result;
             }
@@ -440,6 +438,33 @@ private void loadRules() throws IOException{
             // Gérer toute autre exception non prévue
             throw new RuleValidationException("Une erreur inattendue est survenue pendant la validation : " + e.getMessage(), e);
         }
+    }
+
+    private Map<String,FieldValidationResult> union(Map<String,FieldValidationResult> r1, Map<String,FieldValidationResult> r2){
+        if(r1 != null) {
+            Map<String, FieldValidationResult> res = new HashMap<>(r1);
+            for (Map.Entry<String, FieldValidationResult> entry : r2.entrySet()) {
+                if (!res.containsKey(entry.getKey()))
+                    res.put(entry.getKey(), entry.getValue());
+                else {
+                    boolean newValid = res.get(entry.getKey()).isValid() && entry.getValue().isValid();
+                    String newMessage = res.get(entry.getKey()).getMessage();
+                    if(res.get(entry.getKey()).getMessage() == null ||  entry.getValue().getMessage() == null ||
+                            ( res.get(entry.getKey()).getMessage() != null && entry.getValue().getMessage() != null &&
+                                    res.get(entry.getKey()).getMessage().equals(entry.getValue().getMessage())))
+                        newMessage = entry.getValue().getMessage();
+                    else
+                        newMessage = res.get(entry.getKey()).getMessage() + "  " + entry.getValue().getMessage();
+                    FieldValidationResult newResult = new FieldValidationResult();
+                    newResult.setMessage(newMessage);
+                    newResult.setValid(newValid);
+                    res.put(entry.getKey(), newResult);
+                }
+            }
+            return res;
+        }
+        else
+            return r2;
     }
 
     private void completeMissingField(Map<String,String> fieldsToValidate,List<Rule> rules){
