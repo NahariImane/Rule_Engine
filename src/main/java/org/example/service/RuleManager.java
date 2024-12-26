@@ -9,7 +9,9 @@ import org.example.model.*;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 
+
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -18,10 +20,13 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RuleManager implements IRuleManager {
     private List<RuleContainer> ruleContainerList; // Liste de tous les containers chargés
     private String ruleFile;
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
     private static final RuleManager INSTANCE = new RuleManager();
@@ -121,16 +126,21 @@ public class RuleManager implements IRuleManager {
 
                         // Validation des valeurs des colonnes dynamiques
                         if ((regleValue == null || regleValue.isEmpty())) {
-                            throw new RuleLoadingException("La colonne '" + regleHeader + "' est vide  à la ligne " + (rowIndex + 1));
+                            logger.warn("La colonne '{}' est vide à la ligne {}. Le champs sera considérée comme valide par défaut.", regleHeader, (rowIndex + 1));
+                           // throw new RuleLoadingException("La colonne '" + regleHeader + "' est vide  à la ligne " + (rowIndex + 1));
                         }
                         if ((messageValue == null || messageValue.isEmpty()) ) {
-                            throw new RuleLoadingException("La colonne '" + messageHeader + "' est vide à la ligne " + (rowIndex + 1));
+                            logger.warn("La colonne '{}' est vide à la ligne {}.", messageHeader, (rowIndex + 1));
+                            //throw new RuleLoadingException("La colonne '" + messageHeader + "' est vide à la ligne " + (rowIndex + 1));
                         }
                     }
                 }
             }
 
-        } catch (IOException e) {
+        }catch (FileNotFoundException e) {
+            logger.error("Fichier non trouvé : {}", e.getMessage());
+            throw new RuleLoadingException("Le fichier spécifié est introuvable.", e);
+        }catch (IOException e) {
             throw new RuleLoadingException("Erreur lors de l'ouverture du fichier Excel : " + e.getMessage(), e);
         }
     }
@@ -433,9 +443,20 @@ private void loadRules() throws IOException{
             }
         }catch (RuleValidationException e) {
             // Gérer les erreurs spécifiques de validation
+            logger.error("Erreur de validation : {}", e.getMessage(), e);
             throw e;
-        } catch (Exception e) {
+        }catch (NullPointerException e) {
+            logger.error("Tentative d'accès à un objet nul : {}", e.getMessage());
+            throw new RuleValidationException("Une erreur inattendue s'est produite.", e);
+        } catch (ClassCastException e) {
+            logger.error("Erreur de conversion de classe : {}", e.getMessage());
+            throw new RuleValidationException("Erreur de type lors de l'évaluation de l'expression.", e);
+        } catch (IllegalArgumentException e) {
+            logger.error("Argument invalide : {}", e.getMessage());
+            throw new RuleValidationException("Argument invalide fourni.", e);
+        }catch (Exception e) {
             // Gérer toute autre exception non prévue
+            logger.error("Une erreur inattendue est survenue pendant la validation : {}", e.getMessage(), e);
             throw new RuleValidationException("Une erreur inattendue est survenue pendant la validation : " + e.getMessage(), e);
         }
     }
@@ -449,7 +470,7 @@ private void loadRules() throws IOException{
                 else {
                     boolean newValid = res.get(entry.getKey()).isValid() && entry.getValue().isValid();
                     String newMessage = res.get(entry.getKey()).getMessage();
-                    if(res.get(entry.getKey()).getMessage() == null ||  entry.getValue().getMessage() == null ||
+                    if(newMessage == null ||  entry.getValue().getMessage() == null ||
                             ( res.get(entry.getKey()).getMessage() != null && entry.getValue().getMessage() != null &&
                                     res.get(entry.getKey()).getMessage().equals(entry.getValue().getMessage())))
                         newMessage = entry.getValue().getMessage();
@@ -476,6 +497,7 @@ private void loadRules() throws IOException{
     public List<RuleContainer> findRules(Map<String, String> fieldsToValidate) {
         return this.ruleContainerList.stream()
                 .filter(ruleContainer -> this.evaluateExpression(ruleContainer.getWorkflow().getCondition(), fieldsToValidate))
+                .distinct()
                 .collect(Collectors.toList());
     }
 
@@ -492,7 +514,7 @@ private void loadRules() throws IOException{
 
 
     public boolean evaluateExpression(String condition, Map<String, String> fieldsToValidate) {
-        //TODO: evaluate expression
+
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
         Bindings bindings = engine.createBindings();
@@ -539,12 +561,15 @@ private void loadRules() throws IOException{
             Boolean r = (Boolean) engine.eval(condition, bindings);
             return r;
         } catch (ScriptException e) {
-            System.err.println("Erreur lors de l'évaluation de l'expression : " + condition);
+            /*System.err.println("Erreur lors de l'évaluation de l'expression : " + condition);
             e.printStackTrace();
+            return false;*/
+            logger.error("Erreur lors de l'évaluation de l'expression : {}", condition, e);
+            return false;
+        }catch (Exception e) {
+            logger.error("Erreur imprévue lors de l'évaluation de l'expression : {}", condition, e);
             return false;
         }
     }
-
-
 
 }
