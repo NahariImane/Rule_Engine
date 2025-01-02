@@ -27,6 +27,9 @@ public class RuleManager implements IRuleManager {
     private List<RuleContainer> ruleContainerList; // Liste de tous les containers chargés
     private String ruleFile;
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    public String getRuleFile() {
+        return ruleFile;
+    }
 
 
     private static final RuleManager INSTANCE = new RuleManager();
@@ -43,7 +46,7 @@ public class RuleManager implements IRuleManager {
         this.loadRules();
     }
 
-    private void validateExcelStructure() throws RuleLoadingException {
+    void validateExcelStructure() throws RuleLoadingException {
         try (FileInputStream file = new FileInputStream(ruleFile);
              Workbook workbook = new XSSFWorkbook(file)) {
 
@@ -249,7 +252,7 @@ public class RuleManager implements IRuleManager {
 //        return null; // Retourner null si aucune règle n'est valide
 //    }
 
-private void loadRules() throws IOException{
+void loadRules() throws IOException{
 
     if(ruleContainerList == null) {
         ruleContainerList = new ArrayList<>();
