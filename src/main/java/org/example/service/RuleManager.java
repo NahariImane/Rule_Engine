@@ -176,81 +176,7 @@ public class RuleManager implements IRuleManager {
             return columnLetter.toString();
         }
 
-//    private void loadRules() throws IOException{
-//
-//        if(ruleContainerList == null) {
-//            ruleContainerList = new ArrayList<>();
-//        }
-//
-//        try (FileInputStream file = new FileInputStream(ruleFile);
-//             Workbook workbook = new XSSFWorkbook(file)) {
-//
-//            // Lecture de la première feuille du fichier Excel
-//            Sheet sheet = workbook.getSheetAt(0);
-//            Row headerRow = sheet.getRow(0);
-//
-//            for (Row row : sheet) {
-//                if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
-//
-//                // Lire le workflow et sa condition
-//                Workflow workflow = parseWorkflow(row);
-//
-//                // Lire les champs et les règles associées
-//                List<Rule> rules = new ArrayList<>();
-//                for (int col = 2; col < headerRow.getLastCellNum(); col += 3) {
-//                    Field field = parseField(headerRow, col);
-//                    if (field != null){
-//                        Rule rule = parseRule(row, col, field);
-//                        if (rule != null) {
-//                            rules.add(rule);
-//                        }
-//                  }
-//                }
-//
-//                // Ajouter un RuleContainer avec le workflow et ses règles
-//                RuleContainer container = new RuleContainer(workflow, rules);
-//                ruleContainerList.add(container);
-//            }
-//        }
-////        this.printRules();
-//    }
-//
-//    // Méthode pour parser un Workflow
-//    private Workflow parseWorkflow(Row row) {
-//        String workflowName = row.getCell(0).getStringCellValue().trim(); // Colonne Workflow Name
-//        String condition = row.getCell(1).getStringCellValue().trim();    // Colonne Condition
-//        return new Workflow(workflowName, condition);
-//    }
-//
-//    private Field parseField(Row headerRow, int col) {
-//        Cell fieldNameCell = headerRow.getCell(col);
-//        if(fieldNameCell != null) {
-//            // Initialiser les valeurs par défaut
-//            String fieldName =fieldNameCell.getStringCellValue().trim(); // Nom du champ
-//            fieldName = fieldName.replace("CHAMP_", "");
-//
-//            // Créer et retourner une instance de Field
-//            return new Field(fieldName);
-//        }
-//        return null;
-//    }
-//
-//    private Rule parseRule(Row row,  int col, Field field) {
-//        // Lecture des cellules dans la colonne pour le champ et la règle
-//        Cell champCell = row.getCell(col);
-//        Cell ruleCell = row.getCell(col + 1); // Colonne contenant l'expression de la règle
-//        Cell desciptionCell = row.getCell(col + 2); // Colonne contenant la description de la règle
-//        // Vérifier que la colonne "CHAMP" est marquée "YES" et que la règle est définie
-//        if (champCell != null && "YES".equalsIgnoreCase(champCell.getStringCellValue().trim()) && ruleCell != null && desciptionCell != null) {
-//            // Récupérer l'expression de la règle (entière)
-//            String ruleExpression = ruleCell.getStringCellValue().trim();
-//            String ruleDescription = desciptionCell.getStringCellValue().trim();
-//            // Retourner une instance de Rule et son expression et sa description
-//            return new Rule(field,ruleExpression,ruleDescription);
-//        }
-//
-//        return null; // Retourner null si aucune règle n'est valide
-//    }
+
 
 void loadRules() throws IOException{
 
@@ -342,55 +268,6 @@ void loadRules() throws IOException{
 
 
     /****************************************Validate***********************************/
-
-//    @Override
-//    public Map<String, WorkflowValidationResult> validate(DataObject dataToValidate) throws Exception {
-//        //Récupère les champs à valider
-//        Map<String,String> fieldsToValidate = dataToValidate.getFields();
-//
-//
-//        Map<String, WorkflowValidationResult> results = new HashMap<>();
-//
-//        //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
-//        //parmi tous les champs existant (les champs de chaque workflow)
-//        for(RuleContainer ruleContainer : this.ruleContainerList){
-//            completeMissingField(fieldsToValidate,ruleContainer.getRuleList());
-//        }
-//
-//        //identifié le workflow
-//        List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
-//
-//        //si aucun workflow n'est identifié, retourne une map vide
-//        if(ruleContainers == null || ruleContainers.isEmpty()) {
-//            return results;
-//            //throw new Exception("Aucun workflow identifié.");
-//        }
-//
-//        //si des workflow sont identifiés
-//        for(RuleContainer ruleContainer: ruleContainers) {
-//            List<Rule> rules = ruleContainer.getRuleList();
-//            Map<String, FieldValidationResult> workFlowResult = new HashMap<>();
-//            rules.forEach(rule -> {
-//                FieldValidationResult fieldResult = new FieldValidationResult();
-//
-//                //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
-//                // nouvelle key = "value" , value = valeur trouvée sinon null
-//                this.addFieldValueWithRule(rule,fieldsToValidate);
-//
-//                boolean isValid = this.evaluateExpression(rule.getExpression(),fieldsToValidate);
-//                fieldResult.setValid(isValid);
-//                fieldResult.setMessage(isValid ? null : rule.getDescription());
-//                workFlowResult.put( rule.getField().getLabel(), fieldResult);
-//
-//                fieldsToValidate.remove("value");
-//            });
-//            WorkflowValidationResult workflowValidationResult = new WorkflowValidationResult();
-//            workflowValidationResult.setFieldsResult(workFlowResult);
-//            results.put(ruleContainer.getWorkflow().getName(),workflowValidationResult);
-//        }
-//
-//        return results;
-//    }
 
     @Override
     public WorkflowValidationResult validate(DataObject dataToValidate) throws RuleValidationException {
