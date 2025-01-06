@@ -1,6 +1,10 @@
 package org.example.service;
 import org.example.exception.RuleLoadingException;
+import org.example.exception.RuleValidationException;
+import org.example.model.*;
 import org.junit.jupiter.api.Test;
+import org.example.service.RuleManager;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -41,6 +45,50 @@ public class RuleManagerTest {
 
         verify(ruleManager).configure(validFilePath);
     }
+
+
+    /*@Test
+    void testValidateWithValidData() throws RuleValidationException {
+        // Mock de DataObject avec des champs valides
+        DataObject dataToValidate = mock(DataObject.class);
+        RuleManager ruleManager = spy(RuleManager.getInstance());
+        Map<String, String> fieldsToValidate = new HashMap<>();
+        fieldsToValidate.put("field1", "value1");
+        fieldsToValidate.put("field2", "value2");
+        when(dataToValidate.getFields()).thenReturn(fieldsToValidate);
+
+        // Création des objets Field
+        Field field1 = new Field("field1");
+        Field field2 = new Field("field2");
+
+        // Création de règles avec les champs
+        Rule rule1 = new Rule(field1, "value1 != null", "field1 is invalid");
+        Rule rule2 = new Rule(field2, "value2 != null", "field2 is invalid");
+
+        // Mock de Workflow
+        Workflow workflow = new Workflow("TestWorkflow", "condition");
+
+        // Création de RuleContainer avec les règles
+        RuleContainer ruleContainer = new RuleContainer(workflow, Arrays.asList(rule1, rule2));
+
+        // Assurez-vous que findRules retourne bien un RuleContainer avec des règles
+        doReturn(Collections.singletonList(ruleContainer)).when(ruleManager).findRules(fieldsToValidate);
+
+        // Simuler l'évaluation des expressions
+        doReturn(true).when(ruleManager).evaluateExpression(anyString(), eq(fieldsToValidate));
+
+        // Appel de la méthode validate
+        WorkflowValidationResult result = ruleManager.validate(dataToValidate);
+
+        // Assertions
+        assertNotNull(result, "Le résultat ne doit pas être null.");
+        assertTrue(result.getWorkflowNames().contains("TestWorkflow"), "Le workflow 'TestWorkflow' devrait être identifié.");
+        assertEquals(2, result.getFieldsResult().size(), "Deux champs doivent être validés.");
+        assertTrue(result.getFieldsResult().get("field1").isValid(), "field1 devrait être valide.");
+        assertTrue(result.getFieldsResult().get("field2").isValid(), "field2 devrait être valide.");
+    }*/
+
+
 
 
 

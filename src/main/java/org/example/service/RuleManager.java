@@ -395,6 +395,14 @@ void loadRules() throws IOException{
     @Override
     public WorkflowValidationResult validate(DataObject dataToValidate) throws RuleValidationException {
 
+        if (dataToValidate == null || dataToValidate.getFields() == null) {
+            throw new RuleValidationException("Les données ou les champs à valider sont null.");
+        }
+
+        if (this.ruleContainerList == null || this.ruleContainerList.isEmpty()) {
+            throw new RuleValidationException("Aucune règle disponible pour la validation.");
+        }
+
         try { //Récupère les champs à valider
             Map<String, String> fieldsToValidate = dataToValidate.getFields();
 
