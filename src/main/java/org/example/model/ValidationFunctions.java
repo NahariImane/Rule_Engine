@@ -547,6 +547,26 @@ public class ValidationFunctions {
         }
     }
 
+    public static class BelongToCaseInsensitive implements IBelongTo {
+        @Override
+        public Boolean apply(String value, String target) {
+            try {
+                if (value != null && !value.isEmpty() && target != null && !target.isEmpty()) {
+                    // Comparaison insensible à la casse
+                    return value.equalsIgnoreCase(target);
+                }
+                return false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de BelongToCaseInsensitive : " + e.getMessage());
+                return false;
+            }
+        }
+    }
+
+
+
+
+
     public static class NotNull implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {

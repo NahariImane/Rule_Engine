@@ -19,24 +19,47 @@ public class API {
 
     @RequestMapping("/")
     public String home(){
-        return "Hello World!";
+        return "Test du moteur de validation !";
     }
 
-    @PostMapping("/start")
-    public ResponseEntity<String> testStart() {
+    @PostMapping("/rechargerFichierExcel")
+    public ResponseEntity<?> testStart() {
         try {
             this.myValidator = new ValidatorImpl();
 //            ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V1.xlsx", ValidatorTypeEnum.DATA);
-            ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V2.xlsx", ValidatorTypeEnum.DATA);
+            String filePath = "src/main/Configuration/Rules_V2.xlsx";
+            ValidatorParam param = new ValidatorParam(filePath, ValidatorTypeEnum.DATA);
+
+
             myValidator.start(param);
-            return ResponseEntity.ok("Start successful");
+
+            // Si tout est valide et fonctionne correctement
+            ValidationResponse ExcelFileResponse = new ValidationResponse();
+            ExcelFileResponse.setCodeStatus(CodeStatus.SUCCESS.name());
+            ExcelFileResponse.setMessage("Fichier Chargé avec success");
+           // ExcelFileResponse.setData(null);
+            return ResponseEntity.ok(ExcelFileResponse);
+
+          //  return ResponseEntity.ok("Start successful");
         } catch (RuleLoadingException e) {
             // Retourner une réponse HTTP 400 avec le message de l'exception
-            return ResponseEntity.badRequest().body("Erreur de chargement des règles : " + e.getMessage());
+            // return ResponseEntity.badRequest().body("Erreur de chargement des règles : " + e.getMessage());
+
+            ValidationResponse response = new ValidationResponse();
+            response.setCodeStatus(CodeStatus.FORMAT_EXCEL_INVALID.name());
+            response.setMessage("Erreur dans le fichier Excel : " + e.getMessage());
+           // response.setData(null);
+            return ResponseEntity.badRequest().body(response);
+
         } catch (IOException e) {
             // Retourner une réponse HTTP 500 avec le message de l'exception
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur système lors de l'initialisation : " + e.getMessage());
+          //  return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.body("Erreur système lors de l'initialisation : " + e.getMessage());
+            ValidationResponse response = new ValidationResponse();
+            response.setCodeStatus(CodeStatus.FORMAT_EXCEL_INVALID.name());
+            response.setMessage("Erreur système lors de l'initialisation : " + e.getMessage());
+           // response.setData(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
         }
     }
 
@@ -62,20 +85,45 @@ public class API {
         try {
             WorkflowValidationResult result = myValidator.validate(inputJson);
 
+            ValidationResponse response =  new ValidationResponse();
+
+            // Si la validation est réussie
+            if (result != null && result.isValid()) {
+                response.setCodeStatus(CodeStatus.SUCCESS.name());
+                response.setMessage("Validation réussie");
+                response.setData(result);
+            } else {
+                response.setCodeStatus(CodeStatus.VALIDATION_FAILED.name()); // En cas d'échec
+                response.setMessage("La validation a échoué. Voir les détails ci-dessous.");
+                response.setData(result);
+            }
+
             // Retourner le résultat en cas de succès
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(response);
 
         } catch (RuleValidationException e) {
-            // Exception spécifique liée aux règles de validation
+           /* // Exception spécifique liée aux règles de validation
             return ResponseEntity
                     .badRequest()
-                    .body("Erreur de validation des règles : " + e.getMessage());
+                    .body("Erreur de validation des règles : " + e.getMessage());*/
+
+            // En cas d'exception liée aux règles de validation
+            ValidationResponse response = new ValidationResponse();
+            response.setCodeStatus(CodeStatus.VALIDATION_FAILED.name());
+            response.setMessage("Erreur de validation des règles : " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
 
         } catch (Exception e) {
             // Exception inattendue
-            return ResponseEntity
+            /*return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur interne : Une erreur inattendue est survenue. " + e.getMessage());
+                    .body("Erreur interne : Une erreur inattendue est survenue. " + e.getMessage());*/
+
+            // En cas d'exception générale
+            ValidationResponse response = new ValidationResponse();
+            response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur
+            response.setMessage("Erreur interne : Une erreur inattendue est survenue. " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 

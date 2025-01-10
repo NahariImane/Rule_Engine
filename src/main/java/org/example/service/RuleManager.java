@@ -523,7 +523,6 @@ void loadRules() throws IOException{
     }
 
 
-
     public boolean evaluateExpression(String condition, Map<String, String> fieldsToValidate) {
 
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -541,6 +540,7 @@ void loadRules() throws IOException{
 
         bindings.put("BornInFrance", new BornInFrance());
         bindings.put("BelongTo", new BelongTo());
+        bindings.put("BelongToCaseInsensitive", new BelongToCaseInsensitive());
         bindings.put("NotNull", new NotNull());
         bindings.put("IsNull", new IsNull());
         bindings.put("Equal", new Equal());
