@@ -22,6 +22,29 @@ public class ValidationFunctions {
         DATE_FORMATTERS.add(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
     }
 
+    @FunctionalInterface
+    public interface IDateComparison {
+        int apply(String date1, String date2, String format);
+    }
+
+    public static class CompareDates implements IDateComparison {
+        @Override
+        public int apply(String date1, String date2, String format) {
+            if (date1 == null || date2 == null || format == null) {
+                throw new IllegalArgumentException("Les dates et le format ne doivent pas être nulls.");
+            }
+
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+                LocalDate d1 = LocalDate.parse(date1, formatter);
+                LocalDate d2 = LocalDate.parse(date2, formatter);
+                return d1.compareTo(d2); // Retourne 0 si d1 = d2 , <0 si d1 < d2, >0 si d1 > d2
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Les dates ou le format sont invalides.", e);
+            }
+        }
+    }
+
     public static class MinorCheck implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
@@ -707,5 +730,24 @@ public class ValidationFunctions {
             }
         }
     }
+
+    // méthode générique pour valider le format d'un champs avec du regex
+    // (les numéros de téléphone, emails, pourra être utilisée à guise pour raccourcir les expressions des règles, etc.)
+    @FunctionalInterface
+    public interface IRegexValidation {
+        Boolean apply(String value, String regex);
+    }
+
+    public static class ValidateWithRegex implements IRegexValidation {
+        @Override
+        public Boolean apply(String value, String regex) {
+            if (value == null || regex == null) {
+                throw new IllegalArgumentException("La chaîne ou le regex ne doivent pas être nulls.");
+            }
+
+            return Pattern.matches(regex, value);
+        }
+    }
+
 
 }

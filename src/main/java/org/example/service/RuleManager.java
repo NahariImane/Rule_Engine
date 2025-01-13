@@ -422,6 +422,8 @@ public class RuleManager implements IRuleManager {
         bindings.putAll(fieldsToValidate);
         bindings.put("DateFormat", new DateFormat());
         bindings.put("DateBelongFormat", new DateBelongFormat());
+        bindings.put("CompareDates", new CompareDates());
+
         bindings.put("MajorCheck", new MajorCheck());
         bindings.put("MinorCheck", new MinorCheck());
         bindings.put("LengthBetween", new LengthBetween());
@@ -457,6 +459,8 @@ public class RuleManager implements IRuleManager {
         bindings.put("StringLength", new StringLength());
         bindings.put("ToNumber", new ToNumber());
         bindings.put("ToFloat", new ToFloat());
+
+        bindings.put("ValidateWithRegex", new ValidateWithRegex());
 
         bindings.put("valid", true);
 
