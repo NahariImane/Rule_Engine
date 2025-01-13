@@ -4,16 +4,13 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class WorkflowValidationResult {
-    private ArrayList<String> workflowNames;
+    private ArrayList<String> workflowNames  = new ArrayList<>();
     private boolean isValid;
     private Map<String,FieldValidationResult> fieldsValidationResult;
     private Map<String,FieldValidationResult> fieldsInvalidResult;
 
 
     public void addWorkflowName(String workflowName){
-        if(workflowNames == null){
-            workflowNames = new ArrayList<>();
-        }
         workflowNames.add(workflowName);
     }
 

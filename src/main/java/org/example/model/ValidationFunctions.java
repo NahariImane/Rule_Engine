@@ -22,7 +22,7 @@ public class ValidationFunctions {
         DATE_FORMATTERS.add(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
     }
 
-    public static class Minor_Check implements Function<String, Boolean> {
+    public static class MinorCheck implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             if (value == null || value.isEmpty()) {
@@ -51,7 +51,7 @@ public class ValidationFunctions {
         }
     }
 
-    public static class Major_Check implements Function<String, Boolean> {
+    public static class MajorCheck implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             if (value == null || value.isEmpty()) {
@@ -107,11 +107,8 @@ public class ValidationFunctions {
         }
     }
 
-    @FunctionalInterface
-    public interface IDateBelongFormat {
-        boolean apply(String date,String listFormat);
-    }
-    public static class DateBelongFormat implements IDateBelongFormat {
+
+    public static class DateBelongFormat implements IDateFormat {
         @Override
         public boolean apply(String value, String listFormat) {
 
@@ -139,14 +136,13 @@ public class ValidationFunctions {
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface ILength_Between {
+    public interface ILengthBetween {
         boolean apply(String value, int min, int max);
     }
 
     // Len_Check implementation
-    public static class Length_Between implements ILength_Between {
+    public static class LengthBetween implements ILengthBetween {
         @Override
         public boolean apply(String value, int min, int max) {
             // Validation des paramètres min et max
@@ -165,13 +161,12 @@ public class ValidationFunctions {
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface ILength_Greater {
+    public interface ILengthGreater {
         boolean apply(String value, int min);
     }
 
-    public static class Length_Greater_Than implements ILength_Greater {
+    public static class LengthGreaterThan implements ILengthGreater {
         @Override
         public boolean apply(String value, int min) {
             try {
@@ -180,19 +175,18 @@ public class ValidationFunctions {
                 }
                 return false;
             } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de Length_Greater : " + e.getMessage());
+                System.err.println("Erreur lors de l'évaluation de LengthGreaterThan : " + e.getMessage());
                 return false;
             }
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface ILength_Less_Than {
+    public interface ILengthLessThan {
         boolean apply(String value, int max);
     }
 
-    public static class Length_Less_Than implements ILength_Less_Than {
+    public static class LengthLessThan implements ILengthLessThan {
         @Override
         public boolean apply(String value, int max) {
             try {
@@ -201,7 +195,7 @@ public class ValidationFunctions {
                 }
                 return false;
             } catch (Exception e) {
-                System.err.println("Erreur lors de l'évaluation de Length_Greater : " + e.getMessage());
+                System.err.println("Erreur lors de l'évaluation de ILengthLessThan : " + e.getMessage());
                 return false;
             }
         }
@@ -225,25 +219,6 @@ public class ValidationFunctions {
         }
     }
 
-//    public static class  IsValidName implements Function<String,Boolean> {
-//        @Override
-//        public Boolean apply(String name) {
-//            try {
-//                if(name != null && !name.isEmpty()) {
-////                    String allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz»«\"'()-/.,ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝŸŒàáâãäåæçèéêëìíîïñòóôõöùúûüýÿœ";
-////                    String regex = "^[" + Pattern.quote(allowedCharacters) + "]*$";
-//                    String regex = "^[\\p{L}\\p{M}'\"()\\-/,À-ÖØ-öø-ÿŒœŸÝ]+$";
-//
-//                    // Vérifier si l'entrée correspond à la regex
-//                    return name.matches(regex);
-//                }
-//                return false;
-//            } catch (Exception e) {
-//                System.err.println("Erreur lors de l'évaluation de IsValidName : " + e.getMessage());
-//                return false;
-//            }
-//        }
-//    }
 
     @FunctionalInterface
     public interface IContainsOnlyCharacters {
@@ -304,10 +279,10 @@ public class ValidationFunctions {
     }
 
     @FunctionalInterface
-    public interface INumber_Between{
+    public interface INumberBetween {
         boolean apply(String value, int min, int max);
     }
-    public static class Number_Between implements INumber_Between {
+    public static class NumberBetween implements INumberBetween {
         @Override
         public boolean apply(String value, int min, int max) {
             // Vérification initiale des paramètres
@@ -331,13 +306,12 @@ public class ValidationFunctions {
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface INumber_Greater_Than {
+    public interface INumberGreaterThan {
         boolean apply(String value, int min);
     }
 
-    public static class Number_Greater_Than implements INumber_Greater_Than {
+    public static class NumberGreaterThan implements INumberGreaterThan {
         @Override
         public boolean apply(String value, int min) {
             // Vérifier si la chaîne est nulle ou vide
@@ -357,13 +331,12 @@ public class ValidationFunctions {
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface INumber_Less_Than {
+    public interface INumberLessThan {
         boolean apply(String value, int max);
     }
 
-    public static class Number_Less_Than implements INumber_Less_Than {
+    public static class NumberLessThan implements INumberLessThan {
         @Override
         public boolean apply(String value, int max) {
             // Vérification initiale des paramètres
@@ -423,10 +396,10 @@ public class ValidationFunctions {
     }
 
     @FunctionalInterface
-    public interface IFloat_Between{
+    public interface IFloatBetween {
         boolean apply(String value, float min, float max);
     }
-    public static class Float_Between implements IFloat_Between {
+    public static class FloatBetween implements IFloatBetween {
         @Override
         public boolean apply(String value, float min, float max) {
             // Vérification initiale des paramètres
@@ -450,13 +423,12 @@ public class ValidationFunctions {
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface IFloat_Greater_Than {
+    public interface IFloatGreaterThan {
         boolean apply(String value, float min);
     }
 
-    public static class Float_Greater_Than implements IFloat_Greater_Than {
+    public static class FloatGreaterThan implements IFloatGreaterThan {
         @Override
         public boolean apply(String value, float min) {
             // Vérifier si la chaîne est nulle ou vide
@@ -476,13 +448,12 @@ public class ValidationFunctions {
         }
     }
 
-    // Custom functional interface Len_Check
     @FunctionalInterface
-    public interface IFloat_Less_Than {
+    public interface IFloatLessThan {
         boolean apply(String value, float max);
     }
 
-    public static class Float_Less_Than implements IFloat_Less_Than {
+    public static class FloatLessThan implements IFloatLessThan {
         @Override
         public boolean apply(String value, float max) {
             // Vérification initiale des paramètres
@@ -671,5 +642,68 @@ public class ValidationFunctions {
         }
     }
 
+    @FunctionalInterface
+    public interface IStringContains {
+        Boolean apply(String value, String checkedValue);
+    }
+    public static class StringContains implements IStringContains{
+        @Override
+        public Boolean apply(String value, String checkedValue) {
+            return checkedValue.contains(value);
+        }
+    }
+
+    public static class StringContainsOneOf implements IStringContains{
+        @Override
+        public Boolean apply(String value, String checkedValues) {
+            try {
+                if(value != null && !value.isEmpty() && checkedValues != null && !checkedValues.isEmpty()){
+                    String[] l = checkedValues.split(",\\s*");
+                    for(String s : l){
+                        if(value.contains(s)) return true;
+                    }
+                }
+                return false;
+            } catch (Exception e) {
+                System.err.println("Erreur lors de l'évaluation de StringContainsOneOf : " + e.getMessage());
+                return false;
+            }
+        }
+
+    }
+
+
+
+    public static class StringLength implements Function<String,Integer> {
+        @Override
+        public Integer apply(String value) {
+            return value.length();
+        }
+    }
+
+
+    public static class ToNumber implements Function<String,Integer> {
+        @Override
+        public Integer apply(String value) {
+            try {
+                return Integer.parseInt(value);
+            }catch (NumberFormatException e){
+                System.err.println("Erreur lors de l'évaluation de ToNumber : " + e.getMessage());
+                return null;
+            }
+        }
+    }
+
+    public static class ToFloat implements Function<String,Float> {
+        @Override
+        public Float apply(String value) {
+            try {
+                return Float.parseFloat(value);
+            }catch (NumberFormatException e){
+                System.err.println("Erreur lors de l'évaluation de ToFloat : " + e.getMessage());
+                return null;
+            }
+        }
+    }
 
 }

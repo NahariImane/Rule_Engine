@@ -1,6 +1,7 @@
 package org.example.controller;
 
 
+import org.example.exception.DataException;
 import org.example.exception.RuleLoadingException;
 import org.example.exception.RuleValidationException;
 import org.example.model.*;
@@ -26,7 +27,6 @@ public class API {
     public ResponseEntity<?> testStart() {
         try {
             this.myValidator = new ValidatorImpl();
-//            ValidatorParam param = new ValidatorParam("src/main/Configuration/Rules_V1.xlsx", ValidatorTypeEnum.DATA);
             String filePath = "src/main/Configuration/Rules_V2.xlsx";
             ValidatorParam param = new ValidatorParam(filePath, ValidatorTypeEnum.DATA);
 
@@ -63,23 +63,6 @@ public class API {
         }
     }
 
-//    @PostMapping("/validate")
-//    public Map<String, WorkflowValidationResult> testValidate(@RequestBody DataObject inputJson) {
-//        try {
-//            return myValidator.validate(inputJson);
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
-    /*@PostMapping("/validate")
-    public WorkflowValidationResult testValidate(@RequestBody DataObject inputJson) {
-        try {
-            return myValidator.validate(inputJson);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }*/
     @PostMapping("/validate")
     public ResponseEntity<?> testValidate(@RequestBody DataObject inputJson) {
         try {
@@ -102,29 +85,25 @@ public class API {
             return ResponseEntity.ok(response);
 
         } catch (RuleValidationException e) {
-           /* // Exception spécifique liée aux règles de validation
-            return ResponseEntity
-                    .badRequest()
-                    .body("Erreur de validation des règles : " + e.getMessage());*/
-
             // En cas d'exception liée aux règles de validation
             ValidationResponse response = new ValidationResponse();
             response.setCodeStatus(CodeStatus.VALIDATION_FAILED.name());
             response.setMessage("Erreur de validation des règles : " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
 
-        } catch (Exception e) {
-            // Exception inattendue
-            /*return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur interne : Une erreur inattendue est survenue. " + e.getMessage());*/
-
-            // En cas d'exception générale
+        } catch (DataException e){
             ValidationResponse response = new ValidationResponse();
             response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur
+            response.setMessage("Erreur sur les données d'entrée. " + e.getMessage());
+            return  ResponseEntity.badRequest().body(response);
+        }catch (Exception e) {
+            // En cas d'exception générale
+            ValidationResponse response = new ValidationResponse();
+//            response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur
             response.setMessage("Erreur interne : Une erreur inattendue est survenue. " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+
     }
 
 

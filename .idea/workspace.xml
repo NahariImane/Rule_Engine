@@ -5,13 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a482abbf-4380-42fd-b331-6df651506b89" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/model/CodeStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/example/exception/DataException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/Configuration/.~lock.Rules_V2.xlsx#" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/.~lock.Rules_V2.xlsx#" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/Configuration/Rules_V2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/Rules_V2.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationFunctions.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/WorkflowValidationResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/WorkflowValidationResult.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/ValidatorImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/ValidatorImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/test/Test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/test/Test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/test/dataTest.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/test/dataTest.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,6 +86,9 @@
       <recent name="D:\M2_Sorbonne\Projet_Moteur\Rule_Engine\src\test\Configuration" />
       <recent name="D:\M2_Sorbonne\Projet_Moteur\Rule_Engine\src\main\Configuration" />
     </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="org.example.exception" />
+    </key>
   </component>
   <component name="RunManager" selected="Application.ApplicationTest">
     <configuration name="ApplicationTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -128,8 +135,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.ApplicationTest" />
-        <item itemvalue="JUnit.RuleManagerTest" />
         <item itemvalue="Application.Test" />
+        <item itemvalue="JUnit.RuleManagerTest" />
       </list>
     </recent_temporary>
   </component>

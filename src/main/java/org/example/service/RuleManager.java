@@ -2,12 +2,11 @@ package org.example.service;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.exception.DataException;
 import org.example.exception.RuleLoadingException;
 import org.example.exception.RuleValidationException;
 import org.example.model.ValidationFunctions.*;
 import org.example.model.*;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-
 
 
 import java.io.FileInputStream;
@@ -27,6 +26,8 @@ public class RuleManager implements IRuleManager {
     private List<RuleContainer> ruleContainerList; // Liste de tous les containers chargés
     private String ruleFile;
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private List<String> filedNames;
+
     public String getRuleFile() {
         return ruleFile;
     }
@@ -75,6 +76,7 @@ public class RuleManager implements IRuleManager {
                 throw new RuleLoadingException("La colonne 'Condition' est manquante ou incorrecte.");
             }
 
+
             // Valider les colonnes dynamiques (à partir de la 3e colonne)
             for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
                 // Lire les valeurs des colonnes
@@ -96,6 +98,7 @@ public class RuleManager implements IRuleManager {
                 if (message_header == null || !message_header.startsWith("MESSAGE_")) {
                     throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 1) + ": attendu 'MESSAGE_XXX'.");
                 }
+
             }
             // Parcourir les lignes du fichier Excel
             for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
@@ -178,44 +181,47 @@ public class RuleManager implements IRuleManager {
 
 
 
-void loadRules() throws IOException{
+    void loadRules() throws IOException{
 
-    if(ruleContainerList == null) {
-        ruleContainerList = new ArrayList<>();
-    }
+        if(ruleContainerList == null) {
+            ruleContainerList = new ArrayList<>();
+        }
+        if(this.filedNames == null) {
+            filedNames = new ArrayList<>();
+        }
 
-    try (FileInputStream file = new FileInputStream(ruleFile);
-         Workbook workbook = new XSSFWorkbook(file)) {
+        try (FileInputStream file = new FileInputStream(ruleFile);
+             Workbook workbook = new XSSFWorkbook(file)) {
 
-        // Lecture de la première feuille du fichier Excel
-        Sheet sheet = workbook.getSheetAt(0);
-        Row headerRow = sheet.getRow(0);
+            // Lecture de la première feuille du fichier Excel
+            Sheet sheet = workbook.getSheetAt(0);
+            Row headerRow = sheet.getRow(0);
 
-        for (Row row : sheet) {
-            if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
 
-            // Lire le workflow et sa condition
-            Workflow workflow = parseWorkflow(row);
+                // Lire le workflow et sa condition
+                Workflow workflow = parseWorkflow(row);
 
-            // Lire les champs et les règles associées
-            List<Rule> rules = new ArrayList<>();
-            for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
-                Field field = parseField(headerRow, col);
-                if (field != null){
-                    Rule rule = parseRule(row, col, field);
-                    if (rule != null) {
-                        rules.add(rule);
+                // Lire les champs et les règles associées
+                List<Rule> rules = new ArrayList<>();
+                for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
+                    Field field = parseField(headerRow, col);
+                    if (field != null){
+                        Rule rule = parseRule(row, col, field);
+                        if (rule != null) {
+                            rules.add(rule);
+                        }
                     }
                 }
-            }
 
-            // Ajouter un RuleContainer avec le workflow et ses règles
-            RuleContainer container = new RuleContainer(workflow, rules);
-            ruleContainerList.add(container);
+                // Ajouter un RuleContainer avec le workflow et ses règles
+                RuleContainer container = new RuleContainer(workflow, rules);
+                ruleContainerList.add(container);
+            }
         }
+    //        this.printRules();
     }
-//        this.printRules();
-}
 
     // Méthode pour parser un Workflow
     private Workflow parseWorkflow(Row row) {
@@ -230,6 +236,9 @@ void loadRules() throws IOException{
             // Initialiser les valeurs par défaut
             String fieldName =fieldNameCell.getStringCellValue().trim(); // Nom du champ
             fieldName = fieldName.replace("REGLE_", "");
+
+            //Enregistre tous les champs
+            this.filedNames.add(fieldName);
 
             // Créer et retourner une instance de Field
             return new Field(fieldName);
@@ -268,13 +277,25 @@ void loadRules() throws IOException{
 
 
     /****************************************Validate***********************************/
-
     @Override
-    public WorkflowValidationResult validate(DataObject dataToValidate) throws RuleValidationException {
+    public WorkflowValidationResult validate(DataObject dataToValidate) throws RuleValidationException, DataException {
+        this.validateDataStructure(dataToValidate);
+        return this.validateData(dataToValidate);
+    }
 
+    private void validateDataStructure(DataObject dataToValidate) throws DataException {
         if (dataToValidate == null || dataToValidate.getFields() == null) {
-            throw new RuleValidationException("Les données ou les champs à valider sont null.");
+            throw new DataException("Les données ou les champs à valider sont null.");
         }
+
+        for(String fieldToValidate : dataToValidate.getFields().keySet()){
+            if(!this.filedNames.contains(fieldToValidate))
+                throw new DataException( fieldToValidate + " n'est pas un champ");
+        }
+    }
+
+
+    private WorkflowValidationResult validateData(DataObject dataToValidate) throws RuleValidationException {
 
         if (this.ruleContainerList == null || this.ruleContainerList.isEmpty()) {
             throw new RuleValidationException("Aucune règle disponible pour la validation.");
@@ -284,10 +305,9 @@ void loadRules() throws IOException{
             Map<String, String> fieldsToValidate = dataToValidate.getFields();
 
             //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
-            //parmi tous les champs existant (les champs de chaque workflow)
-            for (RuleContainer ruleContainer : this.ruleContainerList) {
-                completeMissingField(fieldsToValidate, ruleContainer.getRuleList());
-            }
+            //parmi tous les champs existant
+            this.completeMissingField(fieldsToValidate);
+
             //identifié le workflow
             List<RuleContainer> ruleContainers = this.findRules(fieldsToValidate);
 
@@ -376,9 +396,9 @@ void loadRules() throws IOException{
             return r2;
     }
 
-    private void completeMissingField(Map<String,String> fieldsToValidate,List<Rule> rules){
-        for(Rule rule : rules){
-            fieldsToValidate.putIfAbsent(rule.getField().getLabel(),null);
+    private void completeMissingField(Map<String,String> fieldsToValidate){
+        for(String field : this.filedNames){
+            fieldsToValidate.putIfAbsent(field,null);
         }
     }
 
@@ -408,11 +428,11 @@ void loadRules() throws IOException{
         bindings.putAll(fieldsToValidate);
         bindings.put("DateFormat", new DateFormat());
         bindings.put("DateBelongFormat", new DateBelongFormat());
-        bindings.put("Major_Check", new Major_Check());
-        bindings.put("Minor_Check", new Minor_Check());
-        bindings.put("Length_Between", new Length_Between());
-        bindings.put("Length_Less_Than", new Length_Less_Than());
-        bindings.put("Length_Greater_Than", new Length_Greater_Than());
+        bindings.put("MajorCheck", new MajorCheck());
+        bindings.put("MinorCheck", new MinorCheck());
+        bindings.put("LengthBetween", new LengthBetween());
+        bindings.put("LengthLessThan", new LengthLessThan());
+        bindings.put("LengthGreaterThan", new LengthGreaterThan());
         bindings.put("LengthEqual", new LengthEqual());
 
         bindings.put("BornInFrance", new BornInFrance());
@@ -428,15 +448,21 @@ void loadRules() throws IOException{
         bindings.put("BeginUpperCase", new BeginUpperCase());
 
         bindings.put("IsNumber", new IsNumber());
-        bindings.put("Number_Between", new Number_Between());
-        bindings.put("Number_Greater_Than", new Number_Greater_Than());
-        bindings.put("Number_Less_Than", new Number_Less_Than());
+        bindings.put("NumberBetween", new NumberBetween());
+        bindings.put("NumberGreaterThan", new NumberGreaterThan());
+        bindings.put("NumberLessThan", new NumberLessThan());
         bindings.put("NumberEqual", new NumberEqual());
         bindings.put("IsFloat", new IsFloat());
-        bindings.put("Float_Between", new Float_Between());
-        bindings.put("Float_Greater_Than", new Float_Greater_Than());
-        bindings.put("Float_Less_Than", new Float_Less_Than());
+        bindings.put("FloatBetween", new FloatBetween());
+        bindings.put("FloatGreaterThan", new FloatGreaterThan());
+        bindings.put("FloatLessThan", new FloatLessThan());
         bindings.put("FloatEqual", new FloatEqual());
+
+        bindings.put("StringContains", new StringContains());
+        bindings.put("StringContainsOneOf", new StringContainsOneOf());
+        bindings.put("StringLength", new StringLength());
+        bindings.put("ToNumber", new ToNumber());
+        bindings.put("ToFloat", new ToFloat());
 
         bindings.put("valid", true);
 
