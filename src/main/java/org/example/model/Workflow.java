@@ -3,10 +3,10 @@ package org.example.model;
 import java.util.List;
 
 public class Workflow {
-    private String name;
+    private final String name;
 
     // condition globale du workflow
-    private String condition;
+    private final String condition;
 
     public Workflow(String name, String condition) {
         this.name = name;

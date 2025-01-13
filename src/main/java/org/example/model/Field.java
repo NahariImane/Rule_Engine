@@ -2,8 +2,7 @@ package org.example.model;
 
 public class Field {
 
-    private String label;
-
+    private final String label;
 
 
     public Field(String label) {

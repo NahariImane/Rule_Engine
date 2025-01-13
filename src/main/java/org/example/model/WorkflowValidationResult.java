@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class WorkflowValidationResult {
-    private ArrayList<String> workflowNames  = new ArrayList<>();
+    private final ArrayList<String> workflowNames;
     private boolean isValid;
-    private Map<String,FieldValidationResult> fieldsValidationResult;
-    private Map<String,FieldValidationResult> fieldsInvalidResult;
+    private Map<String, FieldValidationResult> fieldsValidationResult;
+    private Map<String, FieldValidationResult> fieldsInvalidResult;
 
+    public WorkflowValidationResult(){
+        this.workflowNames = new ArrayList<>();
+    }
 
-    public void addWorkflowName(String workflowName){
+    public void addWorkflowName(String workflowName) {
         workflowNames.add(workflowName);
     }
 
@@ -23,23 +26,23 @@ public class WorkflowValidationResult {
         this.isValid = isValid;
     }
 
-    public void setFieldsInvalidResult(Map<String,FieldValidationResult> fieldsInvalidResult){
+    public void setFieldsInvalidResult(Map<String, FieldValidationResult> fieldsInvalidResult) {
         this.fieldsInvalidResult = fieldsInvalidResult;
     }
 
-    public ArrayList<String> getWorkflowNames(){
+    public ArrayList<String> getWorkflowNames() {
         return this.workflowNames;
     }
 
-    public Map<String,FieldValidationResult> getFieldsResult(){
+    public Map<String, FieldValidationResult> getFieldsResult() {
         return this.fieldsValidationResult;
     }
 
-    public boolean isValid(){
+    public boolean isValid() {
         return this.isValid;
     }
 
-    public Map<String,FieldValidationResult> getFieldsInvalidResult(){
+    public Map<String, FieldValidationResult> getFieldsInvalidResult() {
         return this.fieldsInvalidResult;
     }
 }

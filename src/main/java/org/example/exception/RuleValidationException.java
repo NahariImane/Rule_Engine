@@ -1,6 +1,6 @@
 package org.example.exception;
 
-public class RuleValidationException extends Exception{
+public class RuleValidationException extends Exception {
     public RuleValidationException(String message) {
         super(message);
     }

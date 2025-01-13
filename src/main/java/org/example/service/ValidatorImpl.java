@@ -1,15 +1,12 @@
 package org.example.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.exception.RuleLoadingException;
 import org.example.model.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-public class ValidatorImpl  implements IValidator {
+public class ValidatorImpl implements IValidator {
 
     private IRuleManager ruleManager;
 
@@ -42,13 +39,12 @@ public class ValidatorImpl  implements IValidator {
             System.out.println(entry.getKey() + " : " + entry.getValue());
         }
 
-        if(result != null) {
+        if (result != null) {
             // Affichage des workflow identifié
             System.out.println("------------VALIDATION------------------");
-                for(String s : result.getWorkflowNames()){
-                    System.out.println("Workflow : " + s );
-                }
-
+            for (String s : result.getWorkflowNames()) {
+                System.out.println("Workflow : " + s);
+            }
 
             // Affichage des résultats de validation
             System.out.println("------------RESULTAT------------------");
@@ -59,15 +55,13 @@ public class ValidatorImpl  implements IValidator {
                 FieldValidationResult fieldsResult = entry.getValue();
                 System.out.println(field + " : " + (fieldsResult.isValid() ? "Valide" : "Invalide"));
             }
-        }
-        else{
+        } else {
             System.out.println("Aucun workflow identifié.");
         }
 
 
         return result;
     }
-
 
 
 }

@@ -82,11 +82,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IDateFormat {
-        boolean apply(String date,String format);
+        Boolean apply(String date, String format);
     }
+
     public static class DateFormat implements IDateFormat {
         @Override
-        public boolean apply(String value, String format) {
+        public Boolean apply(String value, String format) {
             if (value == null || value.isEmpty() || format == null || format.isEmpty()) {
                 return false; // Retourne false si la chaîne ou le format est vide ou nul
             }
@@ -110,41 +111,40 @@ public class ValidationFunctions {
 
     public static class DateBelongFormat implements IDateFormat {
         @Override
-        public boolean apply(String value, String listFormat) {
+        public Boolean apply(String value, String listFormat) {
 
-                if (value == null || value.isEmpty() || listFormat == null || listFormat.isEmpty()) {
-                    return false; // La date ou le format est invalide
+            if (value == null || value.isEmpty() || listFormat == null || listFormat.isEmpty()) {
+                return false; // La date ou le format est invalide
+            }
+            String[] formats = listFormat.split(",\\s*");
+
+            for (String format : formats) {
+                try {
+                    // Créer un DateTimeFormatter basé sur le format donné
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+
+                    // Tenter de parser la date avec le format
+                    formatter.parse(value);
+
+                    // Si aucune exception n'est levée, la date est valide
+                    return true;
+                } catch (DateTimeParseException e) {
+                    //On ignore
                 }
-                String[] formats = listFormat.split(",\\s*");
-
-                for(String format : formats) {
-                    try {
-                        // Créer un DateTimeFormatter basé sur le format donné
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-
-                        // Tenter de parser la date avec le format
-                        formatter.parse(value);
-
-                        // Si aucun exception n'est levée, la date est valide
-                        return true;
-                    }
-                    catch (DateTimeParseException e) {
-                        //On ignore
-                    }
-                }
-                return false;
+            }
+            return false;
         }
     }
 
     @FunctionalInterface
     public interface ILengthBetween {
-        boolean apply(String value, int min, int max);
+        Boolean apply(String value, int min, int max);
     }
 
     // Len_Check implementation
     public static class LengthBetween implements ILengthBetween {
         @Override
-        public boolean apply(String value, int min, int max) {
+        public Boolean apply(String value, int min, int max) {
             // Validation des paramètres min et max
             if (min > max) {
                 throw new IllegalArgumentException("Le minimum doit être inférieur ou égal au maximum.");
@@ -163,14 +163,14 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface ILengthGreater {
-        boolean apply(String value, int min);
+        Boolean apply(String value, int min);
     }
 
     public static class LengthGreaterThan implements ILengthGreater {
         @Override
-        public boolean apply(String value, int min) {
+        public Boolean apply(String value, int min) {
             try {
-                if(value != null && !value.isEmpty()) {
+                if (value != null && !value.isEmpty()) {
                     return value.length() > min;
                 }
                 return false;
@@ -183,14 +183,14 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface ILengthLessThan {
-        boolean apply(String value, int max);
+        Boolean apply(String value, int max);
     }
 
     public static class LengthLessThan implements ILengthLessThan {
         @Override
-        public boolean apply(String value, int max) {
+        public Boolean apply(String value, int max) {
             try {
-                if(value != null && !value.isEmpty()) {
+                if (value != null && !value.isEmpty()) {
                     return value.length() < max;
                 }
                 return false;
@@ -205,11 +205,12 @@ public class ValidationFunctions {
     public interface ILengthEqual {
         Boolean apply(String value, int n);
     }
-    public static class  LengthEqual implements ILengthEqual {
+
+    public static class LengthEqual implements ILengthEqual {
         @Override
         public Boolean apply(String value, int n) {
             try {
-                if(value != null && !value.isEmpty())
+                if (value != null && !value.isEmpty())
                     return value.length() == n;
                 return false;
             } catch (Exception e) {
@@ -222,14 +223,14 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IContainsOnlyCharacters {
-        boolean apply(String value, String characters);
+        Boolean apply(String value, String characters);
     }
 
     public static class ContainsOnlyCharacters implements IContainsOnlyCharacters {
         @Override
-        public boolean apply(String value, String characters) {
+        public Boolean apply(String value, String characters) {
             try {
-                if(value != null && !value.isEmpty() &&  characters != null && !characters.isEmpty()) {
+                if (value != null && !value.isEmpty() && characters != null && !characters.isEmpty()) {
                     String regex = "^[" + Pattern.quote(characters) + "]*$";
                     return value.matches(regex);
                 }
@@ -242,11 +243,11 @@ public class ValidationFunctions {
     }
 
 
-    public static class  BornInFrance implements Function<String,Boolean> {
+    public static class BornInFrance implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             try {
-                if(value != null && !value.isEmpty()) {
+                if (value != null && !value.isEmpty()) {
                     String[] stringList = {"france", "Frane", "FRANCE"};
                     for (String s : stringList) {
                         if (s.equals(value)) return true;
@@ -260,7 +261,7 @@ public class ValidationFunctions {
         }
     }
 
-    public static class  IsNumber implements Function<String,Boolean> {
+    public static class IsNumber implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             if (value == null || value.isEmpty()) {
@@ -280,11 +281,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface INumberBetween {
-        boolean apply(String value, int min, int max);
+        Boolean apply(String value, int min, int max);
     }
+
     public static class NumberBetween implements INumberBetween {
         @Override
-        public boolean apply(String value, int min, int max) {
+        public Boolean apply(String value, int min, int max) {
             // Vérification initiale des paramètres
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
@@ -308,12 +310,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface INumberGreaterThan {
-        boolean apply(String value, int min);
+        Boolean apply(String value, int min);
     }
 
     public static class NumberGreaterThan implements INumberGreaterThan {
         @Override
-        public boolean apply(String value, int min) {
+        public Boolean apply(String value, int min) {
             // Vérifier si la chaîne est nulle ou vide
             if (value == null || value.isEmpty()) {
                 return false;
@@ -333,12 +335,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface INumberLessThan {
-        boolean apply(String value, int max);
+        Boolean apply(String value, int max);
     }
 
     public static class NumberLessThan implements INumberLessThan {
         @Override
-        public boolean apply(String value, int max) {
+        public Boolean apply(String value, int max) {
             // Vérification initiale des paramètres
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
@@ -358,11 +360,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface INumberEqual {
-        boolean apply(String value, int n);
+        Boolean apply(String value, int n);
     }
-    public static class  NumberEqual implements INumberEqual {
+
+    public static class NumberEqual implements INumberEqual {
         @Override
-        public boolean apply(String value, int n) {
+        public Boolean apply(String value, int n) {
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
             }
@@ -378,18 +381,18 @@ public class ValidationFunctions {
         }
     }
 
-    public static class  IsFloat implements Function<String,Boolean> {
+    public static class IsFloat implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             try {
-                if(value != null && !value.isEmpty()) {
+                if (value != null && !value.isEmpty()) {
                     Float.parseFloat(value);
                     return true;
                 }
                 return false;
             } catch (NumberFormatException e) {
                 return false; // Retourne false si ce n'est pas un entier valide
-            }catch (Exception e) {
+            } catch (Exception e) {
                 return false;
             }
         }
@@ -397,11 +400,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IFloatBetween {
-        boolean apply(String value, float min, float max);
+        Boolean apply(String value, float min, float max);
     }
+
     public static class FloatBetween implements IFloatBetween {
         @Override
-        public boolean apply(String value, float min, float max) {
+        public Boolean apply(String value, float min, float max) {
             // Vérification initiale des paramètres
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
@@ -425,12 +429,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IFloatGreaterThan {
-        boolean apply(String value, float min);
+        Boolean apply(String value, float min);
     }
 
     public static class FloatGreaterThan implements IFloatGreaterThan {
         @Override
-        public boolean apply(String value, float min) {
+        public Boolean apply(String value, float min) {
             // Vérifier si la chaîne est nulle ou vide
             if (value == null || value.isEmpty()) {
                 return false;
@@ -450,12 +454,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IFloatLessThan {
-        boolean apply(String value, float max);
+        Boolean apply(String value, float max);
     }
 
     public static class FloatLessThan implements IFloatLessThan {
         @Override
-        public boolean apply(String value, float max) {
+        public Boolean apply(String value, float max) {
             // Vérification initiale des paramètres
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
@@ -475,11 +479,12 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IFloatEqual {
-        boolean apply(String value, float n);
+        Boolean apply(String value, float n);
     }
-    public static class  FloatEqual implements IFloatEqual {
+
+    public static class FloatEqual implements IFloatEqual {
         @Override
-        public boolean apply(String value, float n) {
+        public Boolean apply(String value, float n) {
             if (value == null || value.isEmpty()) {
                 return false; // Retourne false si la chaîne est nulle ou vide
             }
@@ -500,14 +505,15 @@ public class ValidationFunctions {
     public interface IBelongTo {
         Boolean apply(String value, String list);
     }
-    public static class  BelongTo implements IBelongTo {
+
+    public static class BelongTo implements IBelongTo {
         @Override
         public Boolean apply(String value, String list) {
             try {
-                if(value != null && !value.isEmpty() && list != null && !list.isEmpty()){
+                if (value != null && !value.isEmpty() && list != null && !list.isEmpty()) {
                     String[] l = list.split(",\\s*");
-                    for(String s : l){
-                        if(value.equals(s)) return true;
+                    for (String s : l) {
+                        if (value.equals(s)) return true;
                     }
                 }
                 return false;
@@ -535,14 +541,11 @@ public class ValidationFunctions {
     }
 
 
-
-
-
     public static class NotNull implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             try {
-                return value!=null;
+                return value != null;
             } catch (NumberFormatException e) {
                 System.err.println("Erreur lors de l'évaluation de NotNull : " + e.getMessage());
                 return false;
@@ -554,7 +557,7 @@ public class ValidationFunctions {
         @Override
         public Boolean apply(String value) {
             try {
-                return value==null;
+                return value == null;
             } catch (NumberFormatException e) {
                 System.err.println("Erreur lors de l'évaluation de IsNull : " + e.getMessage());
                 return false;
@@ -566,11 +569,12 @@ public class ValidationFunctions {
     public interface IEqual {
         Boolean apply(String value, String s);
     }
-    public static class  Equal implements IEqual {
+
+    public static class Equal implements IEqual {
         @Override
         public Boolean apply(String value, String s) {
             try {
-                if(value != null && !value.isEmpty() && s != null && !s.isEmpty())
+                if (value != null && !value.isEmpty() && s != null && !s.isEmpty())
                     return s.equals(value);
                 return false;
             } catch (Exception e) {
@@ -581,9 +585,7 @@ public class ValidationFunctions {
     }
 
 
-
-
-    public static class  IsUppercase implements Function<String,Boolean> {
+    public static class IsUppercase implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             try {
@@ -604,7 +606,7 @@ public class ValidationFunctions {
         }
     }
 
-    public static class  IsLowercase implements Function<String,Boolean> {
+    public static class IsLowercase implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             try {
@@ -626,7 +628,7 @@ public class ValidationFunctions {
     }
 
 
-    public static class  BeginUpperCase implements Function<String,Boolean> {
+    public static class BeginUpperCase implements Function<String, Boolean> {
         @Override
         public Boolean apply(String value) {
             try {
@@ -646,21 +648,22 @@ public class ValidationFunctions {
     public interface IStringContains {
         Boolean apply(String value, String checkedValue);
     }
-    public static class StringContains implements IStringContains{
+
+    public static class StringContains implements IStringContains {
         @Override
         public Boolean apply(String value, String checkedValue) {
             return checkedValue.contains(value);
         }
     }
 
-    public static class StringContainsOneOf implements IStringContains{
+    public static class StringContainsOneOf implements IStringContains {
         @Override
         public Boolean apply(String value, String checkedValues) {
             try {
-                if(value != null && !value.isEmpty() && checkedValues != null && !checkedValues.isEmpty()){
+                if (value != null && !value.isEmpty() && checkedValues != null && !checkedValues.isEmpty()) {
                     String[] l = checkedValues.split(",\\s*");
-                    for(String s : l){
-                        if(value.contains(s)) return true;
+                    for (String s : l) {
+                        if (value.contains(s)) return true;
                     }
                 }
                 return false;
@@ -673,8 +676,7 @@ public class ValidationFunctions {
     }
 
 
-
-    public static class StringLength implements Function<String,Integer> {
+    public static class StringLength implements Function<String, Integer> {
         @Override
         public Integer apply(String value) {
             return value.length();
@@ -682,24 +684,24 @@ public class ValidationFunctions {
     }
 
 
-    public static class ToNumber implements Function<String,Integer> {
+    public static class ToNumber implements Function<String, Integer> {
         @Override
         public Integer apply(String value) {
             try {
                 return Integer.parseInt(value);
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.err.println("Erreur lors de l'évaluation de ToNumber : " + e.getMessage());
                 return null;
             }
         }
     }
 
-    public static class ToFloat implements Function<String,Float> {
+    public static class ToFloat implements Function<String, Float> {
         @Override
         public Float apply(String value) {
             try {
                 return Float.parseFloat(value);
-            }catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.err.println("Erreur lors de l'évaluation de ToFloat : " + e.getMessage());
                 return null;
             }

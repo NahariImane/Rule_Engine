@@ -5,13 +5,13 @@ import org.example.exception.DataException;
 import org.example.exception.RuleLoadingException;
 import org.example.exception.RuleValidationException;
 import org.example.model.*;
+import org.example.service.IValidator;
 import org.example.service.ValidatorImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 
 @RestController
@@ -19,7 +19,7 @@ public class API {
     IValidator myValidator;
 
     @RequestMapping("/")
-    public String home(){
+    public String home() {
         return "Test du moteur de validation !";
     }
 
@@ -30,34 +30,27 @@ public class API {
             String filePath = "src/main/Configuration/Rules_V2.xlsx";
             ValidatorParam param = new ValidatorParam(filePath, ValidatorTypeEnum.DATA);
 
-
             myValidator.start(param);
 
             // Si tout est valide et fonctionne correctement
             ValidationResponse ExcelFileResponse = new ValidationResponse();
             ExcelFileResponse.setCodeStatus(CodeStatus.SUCCESS.name());
             ExcelFileResponse.setMessage("Fichier Chargé avec success");
-           // ExcelFileResponse.setData(null);
             return ResponseEntity.ok(ExcelFileResponse);
 
-          //  return ResponseEntity.ok("Start successful");
+            //  return ResponseEntity.ok("Start successful");
         } catch (RuleLoadingException e) {
             // Retourner une réponse HTTP 400 avec le message de l'exception
-            // return ResponseEntity.badRequest().body("Erreur de chargement des règles : " + e.getMessage());
-
             ValidationResponse response = new ValidationResponse();
             response.setCodeStatus(CodeStatus.FORMAT_EXCEL_INVALID.name());
             response.setMessage("Erreur dans le fichier Excel : " + e.getMessage());
-           // response.setData(null);
             return ResponseEntity.badRequest().body(response);
 
         } catch (IOException e) {
             // Retourner une réponse HTTP 500 avec le message de l'exception
-          //  return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.body("Erreur système lors de l'initialisation : " + e.getMessage());
             ValidationResponse response = new ValidationResponse();
             response.setCodeStatus(CodeStatus.FORMAT_EXCEL_INVALID.name());
             response.setMessage("Erreur système lors de l'initialisation : " + e.getMessage());
-           // response.setData(null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 
         }
@@ -68,7 +61,7 @@ public class API {
         try {
             WorkflowValidationResult result = myValidator.validate(inputJson);
 
-            ValidationResponse response =  new ValidationResponse();
+            ValidationResponse response = new ValidationResponse();
 
             // Si la validation est réussie
             if (result != null && result.isValid()) {
@@ -91,12 +84,12 @@ public class API {
             response.setMessage("Erreur de validation des règles : " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
 
-        } catch (DataException e){
+        } catch (DataException e) {
             ValidationResponse response = new ValidationResponse();
             response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur
             response.setMessage("Erreur sur les données d'entrée. " + e.getMessage());
-            return  ResponseEntity.badRequest().body(response);
-        }catch (Exception e) {
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
             // En cas d'exception générale
             ValidationResponse response = new ValidationResponse();
 //            response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur

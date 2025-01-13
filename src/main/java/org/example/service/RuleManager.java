@@ -19,6 +19,7 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ public class RuleManager implements IRuleManager {
     @Override
     public void configure(String ruleFilePath) throws IOException, RuleLoadingException {
         this.ruleFile = ruleFilePath;
-        validateExcelStructure();
+        this.validateExcelStructure();
         this.loadRules();
     }
 
@@ -80,7 +81,7 @@ public class RuleManager implements IRuleManager {
             // Valider les colonnes dynamiques (à partir de la 3e colonne)
             for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
                 // Lire les valeurs des colonnes
-                String regle_header = headerRow.getCell(col) != null ? headerRow.getCell(col ).getStringCellValue().trim() : null;
+                String regle_header = headerRow.getCell(col) != null ? headerRow.getCell(col).getStringCellValue().trim() : null;
                 String message_header = headerRow.getCell(col + 1) != null ? headerRow.getCell(col + 1).getStringCellValue().trim() : null;
 
                 // Vérifier si toutes les colonnes sont vides, ce qui signale la fin des colonnes dynamiques
@@ -91,7 +92,7 @@ public class RuleManager implements IRuleManager {
 
                 // Validation de la colonne REGLE_
                 if (regle_header == null || !regle_header.startsWith("REGLE_")) {
-                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col ) + ": attendu 'REGLE_XXX'.");
+                    throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col) + ": attendu 'REGLE_XXX'.");
                 }
 
                 // Validation de la colonne MESSAGE_
@@ -105,13 +106,13 @@ public class RuleManager implements IRuleManager {
                 Row row = sheet.getRow(rowIndex);
 
                 // Ignorer les lignes nulles ou vides
-                if (row == null || isRowEmpty(row)) {
+                if (row == null || this.isRowEmpty(row)) {
                     continue; // next line
                 }
 
                 // Valider les valeurs des colonnes Workflow name et Condition
-                String workflowName = getCellValue(row.getCell(0));
-                String condition = getCellValue(row.getCell(1));
+                String workflowName = this.getCellValue(row.getCell(0));
+                String condition = this.getCellValue(row.getCell(1));
 
                 if (workflowName == null || workflowName.isEmpty()) {
                     throw new RuleLoadingException("La colonne 'Workflow name' est vide à la ligne " + (rowIndex + 1));
@@ -123,19 +124,19 @@ public class RuleManager implements IRuleManager {
 
                 // Parcourir les colonnes dynamiques (REGLE_ et MESSAGE_)
                 for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
-                    String regleHeader = getCellValue(headerRow.getCell(col));
-                    String messageHeader = getCellValue(headerRow.getCell(col + 1));
+                    String regleHeader = this.getCellValue(headerRow.getCell(col));
+                    String messageHeader = this.getCellValue(headerRow.getCell(col + 1));
 
                     if (regleHeader != null && regleHeader.startsWith("REGLE_")) {
-                        String regleValue = getCellValue(row.getCell(col));
-                        String messageValue = getCellValue(row.getCell(col + 1));
+                        String regleValue = this.getCellValue(row.getCell(col));
+                        String messageValue = this.getCellValue(row.getCell(col + 1));
 
                         // Validation des valeurs des colonnes dynamiques
                         if ((regleValue == null || regleValue.isEmpty())) {
                             logger.warn("La colonne '{}' est vide à la ligne {}. Le champs sera considérée comme valide par défaut.", regleHeader, (rowIndex + 1));
-                           // throw new RuleLoadingException("La colonne '" + regleHeader + "' est vide  à la ligne " + (rowIndex + 1));
+                            // throw new RuleLoadingException("La colonne '" + regleHeader + "' est vide  à la ligne " + (rowIndex + 1));
                         }
-                        if ((messageValue == null || messageValue.isEmpty()) ) {
+                        if ((messageValue == null || messageValue.isEmpty())) {
                             logger.warn("La colonne '{}' est vide à la ligne {}.", messageHeader, (rowIndex + 1));
                             //throw new RuleLoadingException("La colonne '" + messageHeader + "' est vide à la ligne " + (rowIndex + 1));
                         }
@@ -143,10 +144,10 @@ public class RuleManager implements IRuleManager {
                 }
             }
 
-        }catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             logger.error("Fichier non trouvé : {}", e.getMessage());
             throw new RuleLoadingException("Le fichier spécifié est introuvable.", e);
-        }catch (IOException e) {
+        } catch (IOException e) {
             throw new RuleLoadingException("Erreur lors de l'ouverture du fichier Excel : " + e.getMessage(), e);
         }
     }
@@ -161,6 +162,7 @@ public class RuleManager implements IRuleManager {
         }
         return true;
     }
+
     // Méthode pour obtenir la valeur d'une cellule
     private String getCellValue(Cell cell) {
         if (cell == null) return null;
@@ -169,24 +171,23 @@ public class RuleManager implements IRuleManager {
 
 
     public static String convertToColumnLetter(int columnIndex) {
-            StringBuilder columnLetter = new StringBuilder();
-            columnIndex += 1; // Ajuster l'index pour commencer à 1.
-            while (columnIndex > 0) {
-                int remainder = (columnIndex - 1) % 26;
-                columnLetter.insert(0, (char) (remainder + 'A'));
-                columnIndex = (columnIndex - 1) / 26;
-            }
-            return columnLetter.toString();
+        StringBuilder columnLetter = new StringBuilder();
+        columnIndex += 1; // Ajuster l'index pour commencer à 1.
+        while (columnIndex > 0) {
+            int remainder = (columnIndex - 1) % 26;
+            columnLetter.insert(0, (char) (remainder + 'A'));
+            columnIndex = (columnIndex - 1) / 26;
         }
+        return columnLetter.toString();
+    }
 
 
+    void loadRules() throws IOException {
 
-    void loadRules() throws IOException{
-
-        if(ruleContainerList == null) {
+        if (ruleContainerList == null) {
             ruleContainerList = new ArrayList<>();
         }
-        if(this.filedNames == null) {
+        if (this.filedNames == null) {
             filedNames = new ArrayList<>();
         }
 
@@ -201,14 +202,14 @@ public class RuleManager implements IRuleManager {
                 if (row.getRowNum() == 0) continue; // Ignorer l'en-tête
 
                 // Lire le workflow et sa condition
-                Workflow workflow = parseWorkflow(row);
+                Workflow workflow = this.parseWorkflow(row);
 
                 // Lire les champs et les règles associées
                 List<Rule> rules = new ArrayList<>();
                 for (int col = 2; col < headerRow.getLastCellNum(); col += 2) {
-                    Field field = parseField(headerRow, col);
-                    if (field != null){
-                        Rule rule = parseRule(row, col, field);
+                    Field field = this.parseField(headerRow, col);
+                    if (field != null) {
+                        Rule rule = this.parseRule(row, col, field);
                         if (rule != null) {
                             rules.add(rule);
                         }
@@ -220,7 +221,7 @@ public class RuleManager implements IRuleManager {
                 ruleContainerList.add(container);
             }
         }
-    //        this.printRules();
+        //        this.printRules();
     }
 
     // Méthode pour parser un Workflow
@@ -232,9 +233,9 @@ public class RuleManager implements IRuleManager {
 
     private Field parseField(Row headerRow, int col) {
         Cell fieldNameCell = headerRow.getCell(col);
-        if(fieldNameCell != null) {
+        if (fieldNameCell != null) {
             // Initialiser les valeurs par défaut
-            String fieldName =fieldNameCell.getStringCellValue().trim(); // Nom du champ
+            String fieldName = fieldNameCell.getStringCellValue().trim(); // Nom du champ
             fieldName = fieldName.replace("REGLE_", "");
 
             //Enregistre tous les champs
@@ -246,9 +247,9 @@ public class RuleManager implements IRuleManager {
         return null;
     }
 
-    private Rule parseRule(Row row,  int col, Field field) {
+    private Rule parseRule(Row row, int col, Field field) {
         // Lecture des cellules dans la colonne pour le champ et la règle
-        Cell ruleCell = row.getCell(col ); // Colonne contenant l'expression de la règle
+        Cell ruleCell = row.getCell(col); // Colonne contenant l'expression de la règle
         Cell desciptionCell = row.getCell(col + 1); // Colonne contenant la description de la règle
 
         if (ruleCell != null && desciptionCell != null) {
@@ -256,24 +257,23 @@ public class RuleManager implements IRuleManager {
             String ruleExpression = ruleCell.getStringCellValue().trim();
             String ruleDescription = desciptionCell.getStringCellValue().trim();
             // Retourner une instance de Rule et son expression et sa description
-            return new Rule(field,ruleExpression,ruleDescription);
+            return new Rule(field, ruleExpression, ruleDescription);
         }
 
         return null; // Retourner null si aucune règle n'est valide
     }
 
-    private void printRules(){
-        for (RuleContainer ruleConainer : this.ruleContainerList){
+    private void printRules() {
+        for (RuleContainer ruleConainer : this.ruleContainerList) {
             System.out.println("workflow : " + ruleConainer.getWorkflow().getName());
             System.out.println("  condition : " + ruleConainer.getWorkflow().getCondition());
-            for(Rule rule : ruleConainer.getRuleList()){
+            for (Rule rule : ruleConainer.getRuleList()) {
                 System.out.println("    champ : " + rule.getField().getLabel());
                 System.out.println("    regle : " + rule.getExpression());
                 System.out.println("    description : " + rule.getDescription());
             }
         }
     }
-
 
 
     /****************************************Validate***********************************/
@@ -288,9 +288,9 @@ public class RuleManager implements IRuleManager {
             throw new DataException("Les données ou les champs à valider sont null.");
         }
 
-        for(String fieldToValidate : dataToValidate.getFields().keySet()){
-            if(!this.filedNames.contains(fieldToValidate))
-                throw new DataException( fieldToValidate + " n'est pas un champ");
+        for (String fieldToValidate : dataToValidate.getFields().keySet()) {
+            if (!this.filedNames.contains(fieldToValidate))
+                throw new DataException(fieldToValidate + " n'est pas un champ");
         }
     }
 
@@ -305,7 +305,7 @@ public class RuleManager implements IRuleManager {
             Map<String, String> fieldsToValidate = dataToValidate.getFields();
 
             //complete la map fieldsToValidate s'il y a des champs manquant avec null comme value
-            //parmi tous les champs existant
+            //parmi tous les champs existants
             this.completeMissingField(fieldsToValidate);
 
             //identifié le workflow
@@ -313,7 +313,6 @@ public class RuleManager implements IRuleManager {
 
             //si aucun workflow n'est identifié, retourne une map vide
             if (ruleContainers == null || ruleContainers.isEmpty()) {
-                // return null;
                 throw new RuleValidationException("Aucun workflow identifié pour les données fournies.");
             } else {
                 //si des workflow sont identifiés
@@ -324,15 +323,13 @@ public class RuleManager implements IRuleManager {
                     Map<String, FieldValidationResult> fieldsResult = new HashMap<>();
                     Map<String, FieldValidationResult> fieldsInvalidResult = new HashMap<>();
                     rules.forEach(rule -> {
-                        FieldValidationResult fieldResult = new FieldValidationResult();
-
                         //cherche la règle correspondant à la valeur du champ et ajouter à fieldsToValidate
                         // nouvelle key = "value" , value = valeur trouvée sinon null
                         this.addFieldValueWithRule(rule, fieldsToValidate);
 
                         boolean isValid = this.evaluateExpression(rule.getExpression(), fieldsToValidate);
-                        fieldResult.setValid(isValid);
-                        fieldResult.setMessage(isValid ? null : rule.getDescription());
+
+                        FieldValidationResult fieldResult = new FieldValidationResult(isValid,isValid ? null : rule.getDescription());
                         fieldsResult.put(rule.getField().getLabel(), fieldResult);
 
                         if (!isValid)
@@ -343,17 +340,17 @@ public class RuleManager implements IRuleManager {
 
 
                     result.addWorkflowName(ruleContainer.getWorkflow().getName());
-                    result.setFieldsResult(this.union(result.getFieldsResult(),fieldsResult));
-                    result.setFieldsInvalidResult(this.union(result.getFieldsInvalidResult(),fieldsInvalidResult));
+                    result.setFieldsResult(this.union(result.getFieldsResult(), fieldsResult));
+                    result.setFieldsInvalidResult(this.union(result.getFieldsInvalidResult(), fieldsInvalidResult));
 
                 }
                 return result;
             }
-        }catch (RuleValidationException e) {
+        } catch (RuleValidationException e) {
             // Gérer les erreurs spécifiques de validation
             logger.error("Erreur de validation : {}", e.getMessage(), e);
             throw e;
-        }catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             logger.error("Tentative d'accès à un objet nul : {}", e.getMessage());
             throw new RuleValidationException("Une erreur inattendue s'est produite.", e);
         } catch (ClassCastException e) {
@@ -362,15 +359,15 @@ public class RuleManager implements IRuleManager {
         } catch (IllegalArgumentException e) {
             logger.error("Argument invalide : {}", e.getMessage());
             throw new RuleValidationException("Argument invalide fourni.", e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             // Gérer toute autre exception non prévue
             logger.error("Une erreur inattendue est survenue pendant la validation : {}", e.getMessage(), e);
             throw new RuleValidationException("Une erreur inattendue est survenue pendant la validation : " + e.getMessage(), e);
         }
     }
 
-    private Map<String,FieldValidationResult> union(Map<String,FieldValidationResult> r1, Map<String,FieldValidationResult> r2){
-        if(r1 != null) {
+    private Map<String, FieldValidationResult> union(Map<String, FieldValidationResult> r1, Map<String, FieldValidationResult> r2) {
+        if (r1 != null) {
             Map<String, FieldValidationResult> res = new HashMap<>(r1);
             for (Map.Entry<String, FieldValidationResult> entry : r2.entrySet()) {
                 if (!res.containsKey(entry.getKey()))
@@ -378,27 +375,24 @@ public class RuleManager implements IRuleManager {
                 else {
                     boolean newValid = res.get(entry.getKey()).isValid() && entry.getValue().isValid();
                     String newMessage = res.get(entry.getKey()).getMessage();
-                    if(newMessage == null ||  entry.getValue().getMessage() == null ||
-                            ( res.get(entry.getKey()).getMessage() != null && entry.getValue().getMessage() != null &&
+                    if (newMessage == null || entry.getValue().getMessage() == null ||
+                            (res.get(entry.getKey()).getMessage() != null && entry.getValue().getMessage() != null &&
                                     res.get(entry.getKey()).getMessage().equals(entry.getValue().getMessage())))
                         newMessage = entry.getValue().getMessage();
                     else
                         newMessage = res.get(entry.getKey()).getMessage() + "  " + entry.getValue().getMessage();
-                    FieldValidationResult newResult = new FieldValidationResult();
-                    newResult.setMessage(newMessage);
-                    newResult.setValid(newValid);
+                    FieldValidationResult newResult = new FieldValidationResult(newValid,newMessage);
                     res.put(entry.getKey(), newResult);
                 }
             }
             return res;
-        }
-        else
+        } else
             return r2;
     }
 
-    private void completeMissingField(Map<String,String> fieldsToValidate){
-        for(String field : this.filedNames){
-            fieldsToValidate.putIfAbsent(field,null);
+    private void completeMissingField(Map<String, String> fieldsToValidate) {
+        for (String field : this.filedNames) {
+            fieldsToValidate.putIfAbsent(field, null);
         }
     }
 
@@ -409,18 +403,18 @@ public class RuleManager implements IRuleManager {
                 .collect(Collectors.toList());
     }
 
-    private void addFieldValueWithRule(Rule rule, Map<String, String> fieldsToValidate)  {
+    private void addFieldValueWithRule(Rule rule, Map<String, String> fieldsToValidate) {
         String value = null;
         for (Map.Entry<String, String> entry : fieldsToValidate.entrySet()) {
-            if(entry.getKey().equals(rule.getField().getLabel())){
+            if (entry.getKey().equals(rule.getField().getLabel())) {
                 value = entry.getValue();
             }
         }
-        fieldsToValidate.put("value",value);
+        fieldsToValidate.put("value", value);
     }
 
 
-    public boolean evaluateExpression(String condition, Map<String, String> fieldsToValidate) {
+    private boolean evaluateExpression(String condition, Map<String, String> fieldsToValidate) {
 
         ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
@@ -467,20 +461,15 @@ public class RuleManager implements IRuleManager {
         bindings.put("valid", true);
 
 
-
-//        System.out.println("value : "  + fieldsToValidate.get("value"));
-//        System.out.println("condition : " + condition);
-
         try {
-            Boolean r = (Boolean) engine.eval(condition, bindings);
-            return r;
+            return (boolean) engine.eval(condition, bindings);
         } catch (ScriptException e) {
             /*System.err.println("Erreur lors de l'évaluation de l'expression : " + condition);
             e.printStackTrace();
             return false;*/
             logger.error("Erreur lors de l'évaluation de l'expression : {}", condition, e);
             return false;
-        }catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Erreur imprévue lors de l'évaluation de l'expression : {}", condition, e);
             return false;
         }

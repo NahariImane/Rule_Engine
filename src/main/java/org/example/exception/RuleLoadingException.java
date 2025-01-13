@@ -1,6 +1,6 @@
 package org.example.exception;
 
-public class RuleLoadingException extends Exception{
+public class RuleLoadingException extends Exception {
     public RuleLoadingException(String message) {
         super(message);
     }
