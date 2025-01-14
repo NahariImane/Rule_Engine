@@ -49,31 +49,41 @@ public class RuleManager implements IRuleManager {
     }
 
     void validateExcelStructure() throws RuleLoadingException {
+        logger.info("Démarrage de la validation de la structure du fichier Excel.");
         try (FileInputStream file = new FileInputStream(ruleFile);
              Workbook workbook = new XSSFWorkbook(file)) {
 
             // Vérifiez si le fichier contient au moins une feuille
             if (workbook.getNumberOfSheets() == 0) {
+                logger.error("Le fichier Excel ne contient aucune feuille.");
                 throw new RuleLoadingException("Le fichier Excel ne contient aucune feuille.");
             }
+            logger.info("Nombre de feuilles dans le fichier Excel : {}", workbook.getNumberOfSheets());
+
 
             // Sélectionnez la première feuille
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
+                logger.error("La première feuille du fichier Excel est vide.");
                 throw new RuleLoadingException("La première feuille du fichier Excel est vide.");
             }
+
+
 
             // Vérifiez si l'en-tête est présent
             Row headerRow = sheet.getRow(0);
             if (headerRow == null || headerRow.getLastCellNum() < 4) { // Minimum 4 colonnes pour respecter la structure
+                logger.error("L'en-tête du fichier Excel est manquant ou incomplet.");
                 throw new RuleLoadingException("L'en-tête du fichier Excel est manquant ou incomplet.");
             }
 
             // Vérifiez les colonnes obligatoires
             if (!"Workflow name".equalsIgnoreCase(headerRow.getCell(0).getStringCellValue().trim())) {
+                logger.error("La colonne 'Workflow name' est manquante ou incorrecte.");
                 throw new RuleLoadingException("La colonne 'Workflow name' est manquante ou incorrecte.");
             }
             if (!"Condition".equalsIgnoreCase(headerRow.getCell(1).getStringCellValue().trim())) {
+                logger.error("La colonne 'Condition' est manquante ou incorrecte.");
                 throw new RuleLoadingException("La colonne 'Condition' est manquante ou incorrecte.");
             }
 
@@ -92,11 +102,13 @@ public class RuleManager implements IRuleManager {
 
                 // Validation de la colonne REGLE_
                 if (regle_header == null || !regle_header.startsWith("REGLE_")) {
+                    logger.error("Colonne invalide à l'index {}: attendu 'REGLE_XXX'.", convertToColumnLetter(col));
                     throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col) + ": attendu 'REGLE_XXX'.");
                 }
 
                 // Validation de la colonne MESSAGE_
                 if (message_header == null || !message_header.startsWith("MESSAGE_")) {
+                    logger.error("Colonne invalide à l'index {}: attendu 'MESSAGE_XXX'.", convertToColumnLetter(col + 1));
                     throw new RuleLoadingException("Colonne invalide à l'index " + convertToColumnLetter(col + 1) + ": attendu 'MESSAGE_XXX'.");
                 }
 
@@ -115,10 +127,12 @@ public class RuleManager implements IRuleManager {
                 String condition = this.getCellValue(row.getCell(1));
 
                 if (workflowName == null || workflowName.isEmpty()) {
+                    logger.error("La colonne 'Workflow name' est vide à la ligne {}.", rowIndex + 1);
                     throw new RuleLoadingException("La colonne 'Workflow name' est vide à la ligne " + (rowIndex + 1));
                 }
 
                 if (condition == null || condition.isEmpty()) {
+                    logger.error("La colonne 'Condition' est vide à la ligne {}.", rowIndex + 1);
                     throw new RuleLoadingException("La colonne 'Condition' est vide à la ligne " + (rowIndex + 1));
                 }
 
@@ -143,11 +157,12 @@ public class RuleManager implements IRuleManager {
                     }
                 }
             }
-
+            logger.info("Validation de la structure du fichier Excel terminée avec succès.");
         } catch (FileNotFoundException e) {
             logger.error("Fichier non trouvé : {}", e.getMessage());
             throw new RuleLoadingException("Le fichier spécifié est introuvable.", e);
         } catch (IOException e) {
+            logger.error("Erreur lors de l'ouverture du fichier Excel : {}", e.getMessage());
             throw new RuleLoadingException("Erreur lors de l'ouverture du fichier Excel : " + e.getMessage(), e);
         }
     }
@@ -285,14 +300,19 @@ public class RuleManager implements IRuleManager {
     }
 
     private void validateDataStructure(DataObject dataToValidate) throws DataException {
+        logger.info("Démarrage de la validation de la structure des données.");
         if (dataToValidate == null || dataToValidate.getFields() == null) {
+            logger.error("Les données ou les champs à valider sont null.");
             throw new DataException("Les données ou les champs à valider sont null.");
         }
 
         for (String fieldToValidate : dataToValidate.getFields().keySet()) {
             if (!this.filedNames.contains(fieldToValidate))
+                logger.error("Le champ '{}' n'est pas valide. Validation échouée.", fieldToValidate);
                 throw new DataException(fieldToValidate + " n'est pas un champ");
         }
+
+        logger.info("Validation de la structure des données terminée avec succès.");
     }
 
 
@@ -314,6 +334,7 @@ public class RuleManager implements IRuleManager {
 
             //si aucun workflow n'est identifié, retourne une map vide
             if (ruleContainers == null || ruleContainers.isEmpty()) {
+                logger.error("Aucun workflow identifié pour les données fournies.");
                 throw new RuleValidationException("Aucun workflow identifié pour les données fournies.");
             } else {
                 //si des workflow sont identifiés
@@ -423,8 +444,11 @@ public class RuleManager implements IRuleManager {
         bindings.putAll(fieldsToValidate);
         bindings.put("DateFormat", new DateFormat());
         bindings.put("DateBelongFormat", new DateBelongFormat());
-        bindings.put("CompareDates", new CompareDates());
+        bindings.put("DateEquals", new DateEquals());
+        bindings.put("DateIsBefore", new DateIsBefore());
+        bindings.put("DateIsAfter", new DateIsAfter());
 
+        bindings.put("CalculateAge", new CalculateAge());
         bindings.put("MajorCheck", new MajorCheck());
         bindings.put("MinorCheck", new MinorCheck());
         bindings.put("LengthBetween", new LengthBetween());
@@ -469,9 +493,6 @@ public class RuleManager implements IRuleManager {
         try {
             return (boolean) engine.eval(condition, bindings);
         } catch (ScriptException e) {
-            /*System.err.println("Erreur lors de l'évaluation de l'expression : " + condition);
-            e.printStackTrace();
-            return false;*/
             logger.error("Erreur lors de l'évaluation de l'expression : {}", condition, e);
             return false;
         } catch (Exception e) {

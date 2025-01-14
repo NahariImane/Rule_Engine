@@ -24,21 +24,57 @@ public class ValidationFunctions {
 
     @FunctionalInterface
     public interface IDateComparison {
-        int apply(String date1, String date2, String format);
+        Boolean apply(String date1, String date2, String format);
     }
 
-    public static class CompareDates implements IDateComparison {
+    // Classe pour vérifier si deux dates sont égales
+    public static class DateEquals implements IDateComparison {
         @Override
-        public int apply(String date1, String date2, String format) {
+        public Boolean apply(String date1, String date2, String format) {
             if (date1 == null || date2 == null || format == null) {
                 throw new IllegalArgumentException("Les dates et le format ne doivent pas être nulls.");
             }
-
             try {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
                 LocalDate d1 = LocalDate.parse(date1, formatter);
                 LocalDate d2 = LocalDate.parse(date2, formatter);
-                return d1.compareTo(d2); // Retourne 0 si d1 = d2 , <0 si d1 < d2, >0 si d1 > d2
+                return d1.isEqual(d2); // Vérifie si les dates sont égales
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Les dates ou le format sont invalides.", e);
+            }
+        }
+    }
+
+    // Classe pour vérifier si une date est inférieure à une autre
+    public static class DateIsBefore implements IDateComparison {
+        @Override
+        public Boolean apply(String date1, String date2, String format) {
+            if (date1 == null || date2 == null || format == null) {
+                throw new IllegalArgumentException("Les dates et le format ne doivent pas être nulls.");
+            }
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+                LocalDate d1 = LocalDate.parse(date1, formatter);
+                LocalDate d2 = LocalDate.parse(date2, formatter);
+                return d1.isBefore(d2); // Vérifie si d1 est avant d2
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Les dates ou le format sont invalides.", e);
+            }
+        }
+    }
+
+    // Classe pour vérifier si une date est supérieure à une autre
+    public static class DateIsAfter implements IDateComparison {
+        @Override
+        public Boolean apply(String date1, String date2, String format) {
+            if (date1 == null || date2 == null || format == null) {
+                throw new IllegalArgumentException("Les dates et le format ne doivent pas être nulls.");
+            }
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+                LocalDate d1 = LocalDate.parse(date1, formatter);
+                LocalDate d2 = LocalDate.parse(date2, formatter);
+                return d1.isAfter(d2); // Vérifie si d1 est après d2
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException("Les dates ou le format sont invalides.", e);
             }
@@ -71,6 +107,31 @@ public class ValidationFunctions {
             // Si aucun format ne fonctionne, afficher une erreur et retourner faux
             System.err.println("Erreur : Le format de la valeur n'est pas valide : " + value);
             return false;
+        }
+    }
+
+    public static class CalculateAge implements Function<String, Integer> {
+        @Override
+        public Integer apply(String value) {
+            if (value == null || value.isEmpty()) {
+                throw new IllegalArgumentException("La date ne doit pas être null ou vide.");
+            }
+
+            for (DateTimeFormatter formatter : DATE_FORMATTERS) {
+                try {
+                    // Convertir la chaîne en LocalDate avec un des formats disponibles
+                    LocalDate birth = LocalDate.parse(value, formatter);
+                    LocalDate today = LocalDate.now();
+                    // Calculer l'âge
+                    return Period.between(birth, today).getYears();
+                } catch (DateTimeParseException e) {
+                    // Ignorer et essayer le format suivant
+                }
+            }
+
+            // Si aucun format ne fonctionne, afficher une erreur et retourner une valeur par défaut
+            System.err.println("Erreur : Le format de la valeur n'est pas valide : " + value);
+            return -1; // Retourne -1 pour indiquer une erreur
         }
     }
 

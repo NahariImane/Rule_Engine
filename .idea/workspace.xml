@@ -5,11 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b608f7fa-d0b7-4ab0-8257-e8b3ef17d443" name="Changes" comment="nettoyage">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/logback.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/Configuration/Rules_V2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/Configuration/Rules_V2.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/controller/API.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/model/ValidationFunctions.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/service/RuleManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/Configuration/Rules_V2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/Configuration/Rules_V2.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
