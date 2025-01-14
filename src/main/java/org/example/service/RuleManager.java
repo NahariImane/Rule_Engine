@@ -307,9 +307,10 @@ public class RuleManager implements IRuleManager {
         }
 
         for (String fieldToValidate : dataToValidate.getFields().keySet()) {
-            if (!this.filedNames.contains(fieldToValidate))
+            if (!this.filedNames.contains(fieldToValidate)) {
                 logger.error("Le champ '{}' n'est pas valide. Validation échouée.", fieldToValidate);
                 throw new DataException(fieldToValidate + " n'est pas un champ");
+            }
         }
 
         logger.info("Validation de la structure des données terminée avec succès.");

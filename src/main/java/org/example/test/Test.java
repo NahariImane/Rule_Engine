@@ -16,7 +16,15 @@ public class Test {
         myValidator.start(param);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/dataTest.json"), DataObject.class);
+        //Validation successful
+        DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/data/dataTest1.json"), DataObject.class);
+        //Validation failed
+//        DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/data/dataTest2.json"), DataObject.class);
+        //donnee invalid
+//        DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/data/dataTest3.json"), DataObject.class);
+        //workflow non find
+//        DataObject dataObject = objectMapper.readValue(new File("src/main/java/org/example/test/data/dataTest4.json"), DataObject.class);
+
         WorkflowValidationResult validationResponse = myValidator.validate(dataObject);
 
 

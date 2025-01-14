@@ -1,0 +1,15 @@
+{
+  "fields" :
+  {
+
+    "NOM" : "NAHARI",
+    "PRENOM" : "NAHARI",
+    "DATE_NAISSANCE": "2001-01-22",
+    "TYPE_TITRE" : "PSP",
+    "SEXE": "femme",
+    "TAILLE": "1.63",
+    "YEUX" : "marron"
+
+
+  }
+}

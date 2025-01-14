@@ -1,13 +1,16 @@
 {
   "fields" :
   {
-    "PRENOM" :"Imane",
+
     "NOM" : "NAHARI",
-    "DATE_NAISSANCE": "2001-09-11",
+    "PRENOM" : "NAHARI",
+    "DATE_NAISSANCE": "2001-01-22",
     "STATUT": "majeur",
     "TYPE_TITRE" : "PSP",
     "SEXE": "femme",
     "TAILLE": "1.63",
+    "YEUX" : "marron",
+
 
     "PRENOM_USUEL" : "Imane",
     "NOM_USAGE" : "NAHARI",

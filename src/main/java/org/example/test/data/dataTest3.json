@@ -1,0 +1,21 @@
+{
+  "fields" :
+  {
+    "PRENOM" :"Imane",
+    "NOM" : "NAHARI",
+    "DATE_NAISSANCE": "2001-01-22",
+    "STATUT": "majeur",
+    "TYPE_TITRE" : "PSP",
+    "SEXE": "femme",
+    "TAILLE": "1.63",
+    "TEST" : "test",
+
+
+    "PRENOM_USUEL" : "Imane",
+    "NOM_USAGE" : "NAHARI",
+    "ORIGINE_NOM_USAGE" : "Père",
+
+    "VILLE_NAISSANCE" : "Paris",
+    "PAYS_NAISSANCE" : "france"
+  }
+}
