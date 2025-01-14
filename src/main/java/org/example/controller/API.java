@@ -89,7 +89,8 @@ public class API {
             response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur
             response.setMessage("Erreur sur les données d'entrée. " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // En cas d'exception générale
             ValidationResponse response = new ValidationResponse();
 //            response.setCodeStatus(CodeStatus.FORMAT_DONNEE_INVALID.name()); // Exemple d'un autre statut d'erreur

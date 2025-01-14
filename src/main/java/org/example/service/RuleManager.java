@@ -239,7 +239,8 @@ public class RuleManager implements IRuleManager {
             fieldName = fieldName.replace("REGLE_", "");
 
             //Enregistre tous les champs
-            this.filedNames.add(fieldName);
+            if(!fieldName.isEmpty() && !filedNames.contains(fieldName))
+                this.filedNames.add(fieldName);
 
             // Créer et retourner une instance de Field
             return new Field(fieldName);
